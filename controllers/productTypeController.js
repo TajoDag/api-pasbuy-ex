@@ -22,6 +22,7 @@ exports.updateProductType = catchAsyncErrors(async (req, res, next) => {
   const newData = {
     name: req.body.name,
     status: req.body.status,
+    isShow: req.body.isShow,
   };
   const productType = await ProductType.findByIdAndUpdate(
     req.params.id,

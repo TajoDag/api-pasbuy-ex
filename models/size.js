@@ -1,19 +1,9 @@
 const mongoose = require("mongoose");
 
-const brandSchema = new mongoose.Schema({
+const SizeProductSchema = new mongoose.Schema({
   name: {
     type: String,
-    required: [true, "Nhập tên hãng"],
-    trim: true,
-  },
-  address: {
-    type: String,
-    required: [true, "Nhập tên địa chỉ"],
-    trim: true,
-  },
-  phone: {
-    type: String,
-    required: [true, "Nhập tên số điện thoại"],
+    required: [true, "Nhập loại size"],
     trim: true,
   },
   status: {
@@ -34,4 +24,4 @@ const brandSchema = new mongoose.Schema({
     default: Date.now,
   },
 });
-module.exports = mongoose.model("Brand", brandSchema);
+module.exports = mongoose.model("SizeProduct", SizeProductSchema);

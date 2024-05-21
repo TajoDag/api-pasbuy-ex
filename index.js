@@ -53,6 +53,11 @@ const productType = require("./routes/productTypeRoute");
 const categories = require("./routes/categoriesRoute");
 const brand = require("./routes/brandRoute");
 const product = require("./routes/productRoute");
+const size = require("./routes/sizeRoute");
+
+//
+const autoTranslate = require("./utils/translate");
+//
 
 app.use("/api/v1", menu);
 app.use("/api/v1", user);
@@ -60,10 +65,12 @@ app.use("/api/v1", productType);
 app.use("/api/v1", categories);
 app.use("/api/v1", brand);
 app.use("/api/v1", product);
+app.use("/api/v1", size);
+
 // app.use()
 // Middleware for Errors
 app.use(errorMiddleware);
-
+app.use("/api/v1/translate", autoTranslate);
 // Start the server
 const PORT = process.env.PORT;
 app.listen(PORT, () => {

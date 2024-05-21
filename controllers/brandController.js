@@ -24,6 +24,7 @@ exports.updateBrand = catchAsyncErrors(async (req, res, next) => {
     address: req.body.address,
     phone: req.body.phone,
     status: req.body.status,
+    isShow: req.body.isShow,
   };
   const brand = await Brand.findByIdAndUpdate(req.params.id, newData, {
     new: true,

@@ -1,10 +1,26 @@
 const mongoose = require("mongoose");
 
 const productSchema = new mongoose.Schema({
-name: {
+  name: {
     type: String,
     required: [true, "Nhập tên sản phẩm"],
     trim: true,
+  },
+  flashDeal: {
+    type: Boolean,
+    default: false,
+  },
+  featured: {
+    type: Boolean,
+    default: false,
+  },
+  isNew: {
+    type: Boolean,
+    default: false,
+  },
+  todayDeal: {
+    type: Boolean,
+    default: false,
   },
   description: {
     type: String,
@@ -20,11 +36,11 @@ name: {
     required: [true, "Nhập giá"],
     maxLength: [20, "Giá tối đa 8 ký tự"],
   },
-  sizes: [
-    {
-      type: String,
-    },
-  ],
+  sizeProduct: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Size",
+    required: [true, "Nhập loại size"],
+  },
   importPrice: {
     type: Number,
     required: [true, "Nhập giá"],
@@ -50,7 +66,7 @@ name: {
       },
     },
   ],
-  productType:{
+  productType: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "ProductType",
     required: [true, "Nhập loại sản phẩm"],

@@ -6,6 +6,10 @@ const productTypeSchema = new mongoose.Schema({
     required: [true, "Nhập tên loại sản phẩm"],
     trim: true,
   },
+  isShow: {
+    type: Boolean,
+    default: false,
+  },
   status: {
     type: Boolean,
     default: true,

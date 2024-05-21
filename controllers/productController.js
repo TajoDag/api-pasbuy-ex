@@ -1,6 +1,7 @@
 const catchAsyncErrors = require("../middleware/catchAsyncErrors");
 const Product = require("../models/productModel");
 const Brand = require("../models/brandModel");
+const Size = require("../models/size");
 const Categories = require("../models/categoriesModel");
 const ProductType = require("../models/productType");
 const ErrorHander = require("../utils/errorhander");
@@ -9,9 +10,10 @@ const cloudinary = require("cloudinary");
 
 exports.createProduct = catchAsyncErrors(async (req, res, next) => {
   try {
-    const { brand, category, productType } = req.body;
+    const { brand, category, productType, sizeProduct } = req.body;
 
     const brandDoc = await Brand.findOne({ _id: brand, status: true });
+    const sizeDoc = await Size.findOne({ _id: sizeProduct, status: true });
     const categoryDoc = await Categories.findOne({
       _id: category,
       status: true,
@@ -25,6 +27,14 @@ exports.createProduct = catchAsyncErrors(async (req, res, next) => {
       return next(
         new ErrorHander(
           "Không thể tạo sản phẩm khi trạng thái của nhãn hiệu này chưa được kích hoạt",
+          400
+        )
+      );
+    }
+    if (!sizeDoc) {
+      return next(
+        new ErrorHander(
+          "Không thể tạo sản phẩm khi trạng thái của size chưa được kích hoạt",
           400
         )
       );
@@ -146,7 +156,19 @@ exports.createProduct = catchAsyncErrors(async (req, res, next) => {
 // });
 
 exports.getAllProducts = catchAsyncErrors(async (req, res, next) => {
-  const { name, productType, category, brand, page = 0, size = 10 } = req.body;
+  const {
+    name,
+    productType,
+    category,
+    brand,
+    sizeProduct,
+    todayDeal,
+    flashDeal,
+    isNew,
+    featured,
+    page = 0,
+    size = 10,
+  } = req.body;
 
   // Tạo đối tượng lọc
   let filter = {};
@@ -163,7 +185,21 @@ exports.getAllProducts = catchAsyncErrors(async (req, res, next) => {
   if (brand) {
     filter.brand = brand;
   }
-
+  if (sizeProduct) {
+    filter.sizeProduct = sizeProduct;
+  }
+  if (todayDeal === true) {
+    filter.todayDeal = true;
+  }
+  if (flashDeal === true) {
+    filter.flashDeal = true;
+  }
+  if (isNew === true) {
+    filter.isNew = true;
+  }
+  if (featured === true) {
+    filter.featured = true;
+  }
   // Tính toán phân trang
   const limit = parseInt(size);
   const skip = parseInt(page) * limit;
@@ -174,7 +210,8 @@ exports.getAllProducts = catchAsyncErrors(async (req, res, next) => {
     .limit(limit)
     .populate("brand", "_id name")
     .populate("category", "_id name")
-    .populate("productType", "_id name");
+    .populate("productType", "_id name")
+    .populate("sizeProduct", "_id name");
 
   // Đếm tổng số sản phẩm
   const total = await Product.countDocuments(filter);

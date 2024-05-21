@@ -22,6 +22,7 @@ exports.updateCategories = catchAsyncErrors(async (req, res, next) => {
   const newData = {
     name: req.body.name,
     status: req.body.status,
+    isShow: req.body.isShow,
   };
   const categories = await Categories.findByIdAndUpdate(
     req.params.id,

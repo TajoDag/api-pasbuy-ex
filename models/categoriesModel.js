@@ -6,6 +6,10 @@ const categoriesSchema = new mongoose.Schema({
     required: [true, "Nhập tên danh mục"],
     trim: true,
   },
+  isShow: {
+    type: Boolean,
+    default: false,
+  },
   status: {
     type: Boolean,
     default: true,
