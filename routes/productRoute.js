@@ -8,6 +8,9 @@ const {
   updateProductFeatured,
   updateProductIsNew,
   updateProductTodayDeal,
+  getProductDetails,
+  updateProduct,
+  deleteProduct,
 } = require("../controllers/productController");
 
 const router = express.Router();
@@ -56,9 +59,16 @@ router
   .route("/admin/products/all")
   .post(isAuthenticatedUser, authorizeRoles("admin"), getAllProducts);
 
+router.route("/products/all").post(getAllProducts);
+router
+  .route("/product/:id")
+  .get(getProductDetails)
+  .put(updateProduct)
+  .delete(deleteProduct);
 router
   .route("/admin/products")
   .post(isAuthenticatedUser, authorizeRoles("admin"), createProduct);
+
 router
   .route("/product/:id/status")
   .put(isAuthenticatedUser, authorizeRoles("admin"), updateProductStatus);

@@ -167,16 +167,25 @@ exports.updateProductStatus = catchAsyncErrors(async (req, res, next) => {
   const { status } = req.body;
 
   try {
-    const updatedProduct = await Product.findByIdAndUpdate(id, { status }, {
-      new: true,
-      runValidators: true,
-    });
+    const updatedProduct = await Product.findByIdAndUpdate(
+      id,
+      { status },
+      {
+        new: true,
+        runValidators: true,
+      }
+    );
 
     if (!updatedProduct) {
       return next(new ErrorHander("Không tìm thấy sản phẩm", 404));
     }
 
-    responseData(updatedProduct, 200, "Cập nhật trạng thái sản phẩm thành công", res);
+    responseData(
+      updatedProduct,
+      200,
+      "Cập nhật trạng thái sản phẩm thành công",
+      res
+    );
   } catch (error) {
     console.log(error);
     return next(new ErrorHander(error.message, 500));
@@ -188,16 +197,25 @@ exports.updateProductFlashDeal = catchAsyncErrors(async (req, res, next) => {
   const { flashDeal } = req.body;
 
   try {
-    const updatedProduct = await Product.findByIdAndUpdate(id, { flashDeal }, {
-      new: true,
-      runValidators: true,
-    });
+    const updatedProduct = await Product.findByIdAndUpdate(
+      id,
+      { flashDeal },
+      {
+        new: true,
+        runValidators: true,
+      }
+    );
 
     if (!updatedProduct) {
       return next(new ErrorHander("Không tìm thấy sản phẩm", 404));
     }
 
-    responseData(updatedProduct, 200, "Cập nhật trạng thái sản phẩm thành công", res);
+    responseData(
+      updatedProduct,
+      200,
+      "Cập nhật trạng thái sản phẩm thành công",
+      res
+    );
   } catch (error) {
     console.log(error);
     return next(new ErrorHander(error.message, 500));
@@ -209,16 +227,25 @@ exports.updateProductFeatured = catchAsyncErrors(async (req, res, next) => {
   const { featured } = req.body;
 
   try {
-    const updatedProduct = await Product.findByIdAndUpdate(id, { featured }, {
-      new: true,
-      runValidators: true,
-    });
+    const updatedProduct = await Product.findByIdAndUpdate(
+      id,
+      { featured },
+      {
+        new: true,
+        runValidators: true,
+      }
+    );
 
     if (!updatedProduct) {
       return next(new ErrorHander("Không tìm thấy sản phẩm", 404));
     }
 
-    responseData(updatedProduct, 200, "Cập nhật trạng thái sản phẩm thành công", res);
+    responseData(
+      updatedProduct,
+      200,
+      "Cập nhật trạng thái sản phẩm thành công",
+      res
+    );
   } catch (error) {
     console.log(error);
     return next(new ErrorHander(error.message, 500));
@@ -230,16 +257,25 @@ exports.updateProductIsNew = catchAsyncErrors(async (req, res, next) => {
   const { isNew } = req.body;
 
   try {
-    const updatedProduct = await Product.findByIdAndUpdate(id, { isNew }, {
-      new: true,
-      runValidators: true,
-    });
+    const updatedProduct = await Product.findByIdAndUpdate(
+      id,
+      { isNew },
+      {
+        new: true,
+        runValidators: true,
+      }
+    );
 
     if (!updatedProduct) {
       return next(new ErrorHander("Không tìm thấy sản phẩm", 404));
     }
 
-    responseData(updatedProduct, 200, "Cập nhật trạng thái sản phẩm thành công", res);
+    responseData(
+      updatedProduct,
+      200,
+      "Cập nhật trạng thái sản phẩm thành công",
+      res
+    );
   } catch (error) {
     console.log(error);
     return next(new ErrorHander(error.message, 500));
@@ -251,16 +287,135 @@ exports.updateProductTodayDeal = catchAsyncErrors(async (req, res, next) => {
   const { todayDeal } = req.body;
 
   try {
-    const updatedProduct = await Product.findByIdAndUpdate(id, { todayDeal }, {
-      new: true,
-      runValidators: true,
-    });
+    const updatedProduct = await Product.findByIdAndUpdate(
+      id,
+      { todayDeal },
+      {
+        new: true,
+        runValidators: true,
+      }
+    );
 
     if (!updatedProduct) {
       return next(new ErrorHander("Không tìm thấy sản phẩm", 404));
     }
 
-    responseData(updatedProduct, 200, "Cập nhật trạng thái sản phẩm thành công", res);
+    responseData(
+      updatedProduct,
+      200,
+      "Cập nhật trạng thái sản phẩm thành công",
+      res
+    );
+  } catch (error) {
+    console.log(error);
+    return next(new ErrorHander(error.message, 500));
+  }
+});
+exports.getProductDetails = catchAsyncErrors(async (req, res, next) => {
+  const { id } = req.params;
+
+  try {
+    const product = await Product.findById(id)
+      .populate("brand", "_id name")
+      .populate("category", "_id name")
+      .populate("productType", "_id name")
+      .populate("sizeProduct", "_id name");
+
+    if (!product) {
+      return next(new ErrorHander("Không tìm thấy sản phẩm", 404));
+    }
+
+    responseData(product, 200, "Lấy chi tiết sản phẩm thành công", res);
+  } catch (error) {
+    console.log(error);
+    return next(new ErrorHander(error.message, 500));
+  }
+});
+exports.updateProduct = catchAsyncErrors(async (req, res, next) => {
+  try {
+    const { brand, category, productType, sizeProduct } = req.body;
+
+    const brandDoc = await Brand.findOne({ _id: brand, status: true });
+    const sizeDoc = await Size.findOne({ _id: sizeProduct, status: true });
+    const categoryDoc = await Categories.findOne({
+      _id: category,
+      status: true,
+    });
+
+    if (!brandDoc) {
+      return next(
+        new ErrorHander(
+          "Không thể sửa sản phẩm khi trạng thái của nhãn hiệu này chưa được kích hoạt",
+          400
+        )
+      );
+    }
+    if (!categoryDoc) {
+      return next(
+        new ErrorHander(
+          "Không thể sửa sản phẩm khi trạng thái của danh mục này chưa được kích hoạt",
+          400
+        )
+      );
+    }
+
+    let images = [];
+    if (typeof req.body.images === "string") {
+      images.push(req.body.images);
+    } else {
+      images = req.body.images;
+    }
+
+    if (images && images.length > 0) {
+      const imagesLinks = [];
+      for (let i = 0; i < images.length; i++) {
+        const result = await cloudinary.v2.uploader.upload(images[i], {
+          folder: "products",
+        });
+
+        imagesLinks.push({
+          public_id: result.public_id,
+          url: result.secure_url,
+        });
+      }
+      req.body.images = imagesLinks;
+    }
+
+    const updatedProduct = await Product.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      {
+        new: true,
+        runValidators: true,
+      }
+    );
+
+    if (!updatedProduct) {
+      return next(new ErrorHander("Không tìm thấy sản phẩm", 404));
+    }
+
+    responseData(updatedProduct, 200, "Sửa sản phẩm thành công", res);
+  } catch (error) {
+    console.log(error);
+    return next(new ErrorHander(error.message, 500));
+  }
+});
+exports.deleteProduct = catchAsyncErrors(async (req, res, next) => {
+  try {
+    const product = await Product.findById(req.params.id);
+
+    if (!product) {
+      return next(new ErrorHander("Không tìm thấy sản phẩm", 404));
+    }
+
+    // Xóa ảnh sản phẩm trên cloudinary
+    for (let i = 0; i < product.images.length; i++) {
+      await cloudinary.v2.uploader.destroy(product.images[i].public_id);
+    }
+
+    await Product.deleteOne({ _id: req.params.id });
+
+    responseData({}, 200, "Xóa sản phẩm thành công", res);
   } catch (error) {
     console.log(error);
     return next(new ErrorHander(error.message, 500));
