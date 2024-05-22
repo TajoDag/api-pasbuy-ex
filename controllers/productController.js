@@ -89,72 +89,6 @@ exports.createProduct = catchAsyncErrors(async (req, res, next) => {
   }
 });
 
-// exports.createProduct = catchAsyncErrors(async (req, res, next) => {
-//   try {
-//     const { brand, category, productType } = req.body;
-
-//     const brandDoc = await Brand.findOne({ _id: brand, status: true });
-//     const categoryDoc = await Categories.findOne({
-//       _id: category,
-//       status: true,
-//     });
-//     const productTypeDoc = await ProductType.findOne({
-//       _id: productType,
-//       status: true,
-//     });
-
-//     if (!brandDoc) {
-//       return next(
-//         new ErrorHander(
-//           "Không thể tạo sản phẩm khi trạng thái của nhãn hiệu này chưa được kích hoạt",
-//           400
-//         )
-//       );
-//     }
-//     if (!categoryDoc) {
-//       return next(
-//         new ErrorHander(
-//           "Không thể tạo sản phẩm khi trạng thái của danh mục này chưa được kích hoạt",
-//           400
-//         )
-//       );
-//     }
-//     if (!productTypeDoc) {
-//       return next(
-//         new ErrorHander(
-//           "Không thể tạo sản phẩm khi trạng thái của loại sản phẩm này chưa được kích hoạt",
-//           400
-//         )
-//       );
-//     }
-
-//     let images = req.files;
-
-//     const imagesLinks = [];
-
-//     for (let i = 0; i < images?.length; i++) {
-//       const result = await cloudinary.v2.uploader.upload(images[i].path, {
-//         folder: "products",
-//       });
-
-//       imagesLinks.push({
-//         public_id: result.public_id,
-//         url: result.secure_url,
-//       });
-//     }
-
-//     req.body.images = imagesLinks;
-//     req.body.user = req.user.id;
-
-//     const product = await Product.create(req.body);
-
-//     responseData(product, 200, "Tạo sản phẩm mới thành công", res);
-//   } catch (error) {
-//     console.log(error);
-//     return next(new ErrorHander(error.message, 500));
-//   }
-// });
-
 exports.getAllProducts = catchAsyncErrors(async (req, res, next) => {
   const {
     name,
@@ -227,4 +161,108 @@ exports.getAllProducts = catchAsyncErrors(async (req, res, next) => {
   };
 
   responseData(result, 200, null, res);
+});
+exports.updateProductStatus = catchAsyncErrors(async (req, res, next) => {
+  const { id } = req.params;
+  const { status } = req.body;
+
+  try {
+    const updatedProduct = await Product.findByIdAndUpdate(id, { status }, {
+      new: true,
+      runValidators: true,
+    });
+
+    if (!updatedProduct) {
+      return next(new ErrorHander("Không tìm thấy sản phẩm", 404));
+    }
+
+    responseData(updatedProduct, 200, "Cập nhật trạng thái sản phẩm thành công", res);
+  } catch (error) {
+    console.log(error);
+    return next(new ErrorHander(error.message, 500));
+  }
+});
+
+exports.updateProductFlashDeal = catchAsyncErrors(async (req, res, next) => {
+  const { id } = req.params;
+  const { flashDeal } = req.body;
+
+  try {
+    const updatedProduct = await Product.findByIdAndUpdate(id, { flashDeal }, {
+      new: true,
+      runValidators: true,
+    });
+
+    if (!updatedProduct) {
+      return next(new ErrorHander("Không tìm thấy sản phẩm", 404));
+    }
+
+    responseData(updatedProduct, 200, "Cập nhật trạng thái sản phẩm thành công", res);
+  } catch (error) {
+    console.log(error);
+    return next(new ErrorHander(error.message, 500));
+  }
+});
+
+exports.updateProductFeatured = catchAsyncErrors(async (req, res, next) => {
+  const { id } = req.params;
+  const { featured } = req.body;
+
+  try {
+    const updatedProduct = await Product.findByIdAndUpdate(id, { featured }, {
+      new: true,
+      runValidators: true,
+    });
+
+    if (!updatedProduct) {
+      return next(new ErrorHander("Không tìm thấy sản phẩm", 404));
+    }
+
+    responseData(updatedProduct, 200, "Cập nhật trạng thái sản phẩm thành công", res);
+  } catch (error) {
+    console.log(error);
+    return next(new ErrorHander(error.message, 500));
+  }
+});
+
+exports.updateProductIsNew = catchAsyncErrors(async (req, res, next) => {
+  const { id } = req.params;
+  const { isNew } = req.body;
+
+  try {
+    const updatedProduct = await Product.findByIdAndUpdate(id, { isNew }, {
+      new: true,
+      runValidators: true,
+    });
+
+    if (!updatedProduct) {
+      return next(new ErrorHander("Không tìm thấy sản phẩm", 404));
+    }
+
+    responseData(updatedProduct, 200, "Cập nhật trạng thái sản phẩm thành công", res);
+  } catch (error) {
+    console.log(error);
+    return next(new ErrorHander(error.message, 500));
+  }
+});
+
+exports.updateProductTodayDeal = catchAsyncErrors(async (req, res, next) => {
+  const { id } = req.params;
+  const { todayDeal } = req.body;
+
+  try {
+    const updatedProduct = await Product.findByIdAndUpdate(id, { todayDeal }, {
+      new: true,
+      runValidators: true,
+    });
+
+    if (!updatedProduct) {
+      return next(new ErrorHander("Không tìm thấy sản phẩm", 404));
+    }
+
+    responseData(updatedProduct, 200, "Cập nhật trạng thái sản phẩm thành công", res);
+  } catch (error) {
+    console.log(error);
+    return next(new ErrorHander(error.message, 500));
+  }
 });

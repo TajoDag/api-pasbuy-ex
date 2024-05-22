@@ -3,6 +3,11 @@ const { isAuthenticatedUser, authorizeRoles } = require("../middleware/auth");
 const {
   createProduct,
   getAllProducts,
+  updateProductStatus,
+  updateProductFlashDeal,
+  updateProductFeatured,
+  updateProductIsNew,
+  updateProductTodayDeal,
 } = require("../controllers/productController");
 
 const router = express.Router();
@@ -54,5 +59,19 @@ router
 router
   .route("/admin/products")
   .post(isAuthenticatedUser, authorizeRoles("admin"), createProduct);
-
+router
+  .route("/product/:id/status")
+  .put(isAuthenticatedUser, authorizeRoles("admin"), updateProductStatus);
+router
+  .route("/product/:id/flash-deal")
+  .put(isAuthenticatedUser, authorizeRoles("admin"), updateProductFlashDeal);
+router
+  .route("/product/:id/featured")
+  .put(isAuthenticatedUser, authorizeRoles("admin"), updateProductFeatured);
+router
+  .route("/product/:id/is-new")
+  .put(isAuthenticatedUser, authorizeRoles("admin"), updateProductIsNew);
+router
+  .route("/product/:id/today-deal")
+  .put(isAuthenticatedUser, authorizeRoles("admin"), updateProductTodayDeal);
 module.exports = router;
