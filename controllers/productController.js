@@ -18,10 +18,10 @@ exports.createProduct = catchAsyncErrors(async (req, res, next) => {
       _id: category,
       status: true,
     });
-    const productTypeDoc = await ProductType.findOne({
-      _id: productType,
-      status: true,
-    });
+    // const productTypeDoc = await ProductType.findOne({
+    //   _id: productType,
+    //   status: true,
+    // });
 
     if (!brandDoc) {
       return next(
@@ -31,14 +31,14 @@ exports.createProduct = catchAsyncErrors(async (req, res, next) => {
         )
       );
     }
-    if (!sizeDoc) {
-      return next(
-        new ErrorHander(
-          "Không thể tạo sản phẩm khi trạng thái của size chưa được kích hoạt",
-          400
-        )
-      );
-    }
+    // if (!sizeDoc) {
+    //   return next(
+    //     new ErrorHander(
+    //       "Không thể tạo sản phẩm khi trạng thái của size chưa được kích hoạt",
+    //       400
+    //     )
+    //   );
+    // }
     if (!categoryDoc) {
       return next(
         new ErrorHander(
@@ -47,14 +47,14 @@ exports.createProduct = catchAsyncErrors(async (req, res, next) => {
         )
       );
     }
-    if (!productTypeDoc) {
-      return next(
-        new ErrorHander(
-          "Không thể tạo sản phẩm khi trạng thái của loại sản phẩm này chưa được kích hoạt",
-          400
-        )
-      );
-    }
+    // if (!productTypeDoc) {
+    //   return next(
+    //     new ErrorHander(
+    //       "Không thể tạo sản phẩm khi trạng thái của loại sản phẩm này chưa được kích hoạt",
+    //       400
+    //     )
+    //   );
+    // }
 
     let images = [];
 

@@ -16,7 +16,7 @@ const productSchema = new mongoose.Schema({
   },
   isNew: {
     type: Boolean,
-    default: false,
+    default: true,
   },
   todayDeal: {
     type: Boolean,
@@ -39,7 +39,6 @@ const productSchema = new mongoose.Schema({
   sizeProduct: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Size",
-    required: [true, "Nhập loại size"],
   },
   importPrice: {
     type: Number,
@@ -69,7 +68,7 @@ const productSchema = new mongoose.Schema({
   productType: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "ProductType",
-    required: [true, "Nhập loại sản phẩm"],
+    // required: [true, "Nhập loại sản phẩm"],
   },
   category: {
     type: mongoose.Schema.Types.ObjectId,
