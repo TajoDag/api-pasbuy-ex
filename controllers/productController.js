@@ -421,3 +421,13 @@ exports.deleteProduct = catchAsyncErrors(async (req, res, next) => {
     return next(new ErrorHander(error.message, 500));
   }
 });
+exports.getTotalProducts = catchAsyncErrors(async (req, res, next) => {
+  try {
+    const total = await Product.countDocuments();
+
+    responseData({ total }, 200, "Tổng số sản phẩm", res);
+  } catch (error) {
+    console.log(error);
+    return next(new ErrorHander(error.message, 500));
+  }
+});

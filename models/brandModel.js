@@ -6,6 +6,9 @@ const brandSchema = new mongoose.Schema({
     required: [true, "Nhập tên hãng"],
     trim: true,
   },
+  img: {
+    type: String,
+  },
   address: {
     type: String,
     required: [true, "Nhập tên địa chỉ"],

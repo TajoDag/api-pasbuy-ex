@@ -11,6 +11,7 @@ const {
   getProductDetails,
   updateProduct,
   deleteProduct,
+  getTotalProducts,
 } = require("../controllers/productController");
 
 const router = express.Router();
@@ -84,4 +85,7 @@ router
 router
   .route("/product/:id/today-deal")
   .put(isAuthenticatedUser, authorizeRoles("admin"), updateProductTodayDeal);
+  router
+  .route("/product/total")
+  .get(isAuthenticatedUser, authorizeRoles("admin"), getTotalProducts);
 module.exports = router;
