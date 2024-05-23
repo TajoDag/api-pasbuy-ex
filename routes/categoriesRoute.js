@@ -105,6 +105,9 @@ router
 router
   .route("/admin/categories/all")
   .get(isAuthenticatedUser, authorizeRoles("admin"), getAllCategories);
+  router
+  .route("/categories/all")
+  .get(getAllCategories);
 
 router
   .route("/admin/categories/edit/:id")

@@ -124,6 +124,7 @@ router
 router
   .route("/admin/brand/all")
   .get(isAuthenticatedUser, authorizeRoles("admin"), getAllBrand);
+router.route("/brand/all").get(getAllBrand);
 
 router
   .route("/admin/brand/edit/:id")
