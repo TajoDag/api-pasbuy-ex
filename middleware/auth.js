@@ -7,7 +7,7 @@ exports.isAuthenticatedUser = catchAsyncErrors(async (req, res, next) => {
   const { authorization } = req.headers;
 
   if (!authorization || !authorization.startsWith("Bearer")) {
-    return next(new ErrorHander("Vui lòng đăng nhập để thực hiện", 401));
+    return next(new ErrorHander("Please log in to do this", 401));
   }
   const token = authorization.split(" ")[1];
 
@@ -23,7 +23,7 @@ exports.authorizeRoles = (...roles) => {
     if (!roles.includes(req.user.role)) {
       return next(
         new ErrorHander(
-          `Tài khoản của bạn là quyền: ${req.user.role} không thể thực hiện `,
+          `Your account does not have login permissions`,
           403
         )
       );

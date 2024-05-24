@@ -1,4 +1,4 @@
-const sendToken = (user, statusCode, res, type) => {
+const sendToken = (user, statusCode, res, message) => {
   const token = user.getJWTToken();
 
   // options for cookie
@@ -15,11 +15,7 @@ const sendToken = (user, statusCode, res, type) => {
     .json({
       status: statusCode === 200 || statusCode === 201 ? true : false,
       message:
-        statusCode === 200 || statusCode === 201
-          ? type === "login"
-            ? "Đăng nhập thành công"
-            : "Đăng ký thành công"
-          : "Đã có lỗi xảy ra",
+        statusCode === 200 || statusCode === 201 ? message : "An error has occurred",
       data: {
         user,
         token,

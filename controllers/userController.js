@@ -8,46 +8,64 @@ const responseData = require("../utils/responseData");
 
 // Register a User
 exports.registerUser = catchAsyncErrors(async (req, res, next) => {
-  const { name, email, password, phone, address } = req.body;
+  const { username, name, email, address, password, phone, importInviteCode } = req.body;
+
+  let userInvite = null;
+  if (importInviteCode) {
+    const inviter = await User.findOne({ inviteCode: importInviteCode });
+    if (inviter) {
+      userInvite = {
+        name: inviter.name,
+        email: inviter.email,
+        username: inviter.username,
+        inviteCode: inviter.inviteCode,
+      };
+    } else {
+      return next(new ErrorHander("Invalid invite code", 400));
+    }
+  }
+
+  const newInviteCode = crypto.randomBytes(4).toString("hex");
 
   const user = await User.create({
+    username,
     name,
     email,
     password,
     phone,
     address,
+    inviteCode: newInviteCode,
+    userInvite,
     avatar: {
       public_id: "sample id",
       url: "https://thuvienplus.com/themes/cynoebook/public/images/default-user-image.png",
     },
   });
 
-  sendToken(user, 201, res, "res");
+  sendToken(user, 201, res, "User registered successfully");
 });
 
 // Login User
 exports.loginUser = catchAsyncErrors(async (req, res, next) => {
-  const { email, password } = req.body;
+  const { username, password } = req.body;
 
-  // checking if user has given password and email both
-
-  if (!email || !password) {
-    return next(new ErrorHander("Nhập mật khẩu", 400));
+  if (!username || !password) {
+    return next(new ErrorHander("Enter username and password", 400));
   }
 
-  const user = await User.findOne({ email }).select("+password");
+  const user = await User.findOne({ username }).select("+password");
 
   if (!user) {
-    return next(new ErrorHander("Sai Email hoặc mật khẩu", 400));
+    return next(new ErrorHander("Wrong Username or password", 400));
   }
 
   const isPasswordMatched = await user.comparePassword(password);
 
   if (!isPasswordMatched) {
-    return next(new ErrorHander("Sai Email hoặc mật khẩu", 400));
+    return next(new ErrorHander("Wrong Username or password", 400));
   }
 
-  sendToken(user, 200, res, "login");
+  sendToken(user, 200, res, "User logged in successfully");
 });
 
 // Logout User

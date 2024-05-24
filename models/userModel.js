@@ -7,29 +7,45 @@ const crypto = require("crypto");
 const userSchema = new mongoose.Schema({
   name: {
     type: String,
-    // required: [true, "Nhập tên"],
-    maxLength: [30, "Tên không dài quá 30 ký tự"],
-    minLength: [4, "Tên tối thiệu 4 ký tự"],
+    required: [true, "Enter name"],
+    maxLength: [30, "Name must not be longer than 30 characters"],
+    minLength: [4, "Minimum name 4 characters"],
+  },
+  username: {
+    type: String,
+    required: [true, "Enter username"],
+    maxLength: [30, "Name must not be longer than 30 characters"],
+    minLength: [4, "Minimum name 4 characters"],
   },
   email: {
     type: String,
-    required: [true, "Nhập Email"],
-    // unique: true,
-    validate: [validator.isEmail, "Định dạng Email không đúng"],
+    validate: [validator.isEmail, "Email format is incorrect"],
+    // default: "null",
   },
   password: {
     type: String,
-    required: [true, "nhập mật khẩu"],
-    minLength: [6, "Mật khẩu tối thiểu 6 ký tự"],
+    required: [true, "Enter password"],
+    minLength: [6, "Password minimum 6 characters"],
+    select: false,
   },
   phone: {
     type: String,
-    // required: [true, "Nhập số điện thoại"],
-    length: [10, "số điện thoại phải là 10 số"],
   },
   address: {
     type: String,
-    // required: [true, "Nhập địa chỉ"],
+    // default: "null",
+  },
+  inviteCode: {
+    type: String,
+  },
+  importInviteCode: {
+    type: String,
+  },
+  userInvite: {
+    name: String,
+    email: String,
+    username: String,
+    inviteCode: String,
   },
   avatar: {
     public_id: {

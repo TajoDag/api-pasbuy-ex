@@ -6,12 +6,13 @@ module.exports = (err, req, res, next) => {
 
   // Wrong Mongodb Id error
   if (err.name === "CastError") {
-    const message = `Không tìm thấy dữ liệu tại giá trị: ${err.path}`;
+    const message = `No data found at value: ${err.path}`;
     err = new ErrorHandler(message, 400);
   }
 
   // Mongoose duplicate key error
   if (err.code === 11000) {
+    console.log(err)
     const message = `Trùng ${Object.keys(err.keyValue)} `;
     err = new ErrorHandler(message, 400);
   }
