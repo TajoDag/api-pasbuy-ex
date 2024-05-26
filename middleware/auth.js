@@ -18,14 +18,26 @@ exports.isAuthenticatedUser = catchAsyncErrors(async (req, res, next) => {
   next();
 });
 
+// exports.authorizeRoles = (...roles) => {
+//   return (req, res, next) => {
+//     if (!roles.includes(req.user.role)) {
+//       return next(
+//         new ErrorHander(
+//           `Your account does not have login permissions`,
+//           403
+//         )
+//       );
+//     }
+
+//     next();
+//   };
+// };
+
 exports.authorizeRoles = (...roles) => {
   return (req, res, next) => {
     if (!roles.includes(req.user.role)) {
       return next(
-        new ErrorHander(
-          `Your account does not have login permissions`,
-          403
-        )
+        new ErrorHander(`Your account does not have login permissions`, 403)
       );
     }
 

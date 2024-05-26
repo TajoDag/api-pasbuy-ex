@@ -55,7 +55,7 @@ const brand = require("./routes/brandRoute");
 const product = require("./routes/productRoute");
 const size = require("./routes/sizeRoute");
 const orders = require("./routes/orderRouter");
-
+const agency = require("./routes/agnecyRoute");
 //
 const autoTranslate = require("./utils/translate");
 //
@@ -68,6 +68,7 @@ app.use("/api/v1", brand);
 app.use("/api/v1", product);
 app.use("/api/v1", size);
 app.use("/api/v1", orders);
+app.use("/api/v1", agency);
 
 // app.use()
 // Middleware for Errors

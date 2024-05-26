@@ -8,7 +8,8 @@ const responseData = require("../utils/responseData");
 
 // Register a User
 exports.registerUser = catchAsyncErrors(async (req, res, next) => {
-  const { username, name, email, address, password, phone, importInviteCode } = req.body;
+  const { username, name, email, address, password, phone, importInviteCode } =
+    req.body;
 
   let userInvite = null;
   if (importInviteCode) {
@@ -159,30 +160,39 @@ exports.getAllUser = catchAsyncErrors(async (req, res, next) => {
   responseData(users, 200, null, res);
 });
 
-//findAll
 exports.findAllUsers = catchAsyncErrors(async (req, res, next) => {
-  const { name, page = 1, limit = 9 } = req.body; // Lấy thông tin từ body
-  const skip = (page - 1) * parseInt(limit);
+  const { name, role, page = 0, size = 10 } = req.body; // Lấy thông tin từ body
+  const limit = parseInt(size);
+  const skip = parseInt(page) * limit;
 
-  const query = name ? { name: { $regex: name, $options: "i" } } : {}; // Tìm kiếm không phân biệt hoa thường
+  const query = {};
+
+  if (name) {
+    query.name = { $regex: name, $options: "i" };
+  }
+  if (role) {
+    query.role = role;
+  }
+  // const query = { role: "agency" };
 
   // Tìm kiếm và phân trang
-  const users = await User.find(query).skip(skip).limit(parseInt(limit));
+  const users = await User.find(query).skip(skip).limit(limit);
 
   // Đếm tổng số bản ghi phù hợp
   const total = await User.countDocuments(query);
 
   // Tính tổng số trang
-  const totalPages = Math.ceil(total / parseInt(limit));
+  const totalPages = Math.ceil(total / limit);
 
   // Phản hồi dữ liệu tới client
   responseData(
     {
       users,
-      total,
-      totalPages,
-      currentPage: parseInt(page),
-      pageSize: parseInt(limit),
+      pagination: {
+        total,
+        page: parseInt(page),
+        size: parseInt(size),
+      },
     },
     200,
     "Tìm kiếm thành công",

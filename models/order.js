@@ -1,20 +1,23 @@
 const mongoose = require("mongoose");
 const orderPSchema = new mongoose.Schema({
+  customer: {
+    type: mongoose.Schema.ObjectId,
+    ref: "User",
+    required: true,
+  },
   name: {
     type: String,
-    required: true,
+    // required: true,
   },
   phone: {
     type: String,
-    required: true,
+    // required: true,
   },
   email: {
     type: String,
-    required: true,
   },
   address: {
     type: String,
-    required: true,
   },
   note: {
     type: String,
@@ -52,6 +55,10 @@ const orderPSchema = new mongoose.Schema({
     type: String,
     required: true,
     default: "Processing",
+  },
+  orderLocation: {
+    type: String,
+    default: "In Stock",
   },
   user: {
     type: mongoose.Schema.ObjectId,

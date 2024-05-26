@@ -6,11 +6,11 @@ const {
   getUserDetails,
   updatePassword,
   updateProfile,
-  getAllUser,
   getSingleUser,
   updateUserRole,
   deleteUser,
   findAllUsers,
+  getAllUser,
 } = require("../controllers/userController");
 const { isAuthenticatedUser, authorizeRoles } = require("../middleware/auth");
 
@@ -426,7 +426,7 @@ router
   .put(isAuthenticatedUser, authorizeRoles("admin"), updateUserRole)
   .delete(isAuthenticatedUser, authorizeRoles("admin"), deleteUser);
 
-  router
+router
   .route("/admin/findAllUsers")
   .post(isAuthenticatedUser, authorizeRoles("admin"), findAllUsers);
 

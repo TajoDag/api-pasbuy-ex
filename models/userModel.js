@@ -20,7 +20,6 @@ const userSchema = new mongoose.Schema({
   email: {
     type: String,
     validate: [validator.isEmail, "Email format is incorrect"],
-    // default: "null",
   },
   password: {
     type: String,
@@ -33,13 +32,16 @@ const userSchema = new mongoose.Schema({
   },
   address: {
     type: String,
-    // default: "null",
   },
   inviteCode: {
     type: String,
   },
   importInviteCode: {
     type: String,
+  },
+  isShop: {
+    type: Boolean,
+    default: false,
   },
   userInvite: {
     name: String,
