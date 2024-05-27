@@ -8,6 +8,7 @@ const {
   getOrdersByAgency,
   getOrdersByCustomer,
   updateAgencyOrderStatus,
+  getOrdersByAgencyNotPage,
 } = require("../controllers/orderController");
 const router = express.Router();
 router
@@ -34,7 +35,21 @@ router
     getOrdersByAgency
   );
 
-router.route("/customer/order/all/:customerId").post(getOrdersByCustomer);
+router
+  .route("/customer/order/all/:customerId")
+  .post(isAuthenticatedUser, getOrdersByCustomer);
+
+router
+  .route("/agency/orders/:agencyId")
+  .post(
+    isAuthenticatedUser,
+    authorizeRoles("admin", "agency"),
+    getOrdersByAgencyNotPage
+  );
+
+// router
+//   .route("/customer/order/all/:customerId")
+//   .post(isAuthenticatedUser, getOrdersByCustomer);
 
 router
   .route("/admin/order/status/:id")

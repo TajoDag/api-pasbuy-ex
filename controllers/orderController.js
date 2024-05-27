@@ -9,7 +9,7 @@ const User = require("../models/userModel");
 // Tạo đơn hàng và Agency
 exports.createOrder = catchAsyncErrors(async (req, res, next) => {
   req.body.user = req.user.id;
-  const { customer, orderItems } = req.body;
+  const { customer, orderItems, orderStatus } = req.body;
 
   // Tìm user theo ID của customer và cập nhật giá trị isShop
   const customerUser = await User.findById(customer);
@@ -25,39 +25,41 @@ exports.createOrder = catchAsyncErrors(async (req, res, next) => {
   // Tạo đơn hàng
   const orderSystem = await Order.create(req.body);
 
-  // Tạo Agency mới với thông tin customer và orderItems
-  const agencyProducts = orderItems.map((item) => ({
-    product: item.product,
-    quantity: item.quantity,
-  }));
+  // Tạo hoặc cập nhật Agency
+  let agency = await Agency.findOne({ homeAgents: customer });
 
-  const newAgency = await Agency.create({
-    homeAgents: customer,
-    products: agencyProducts,
-  });
+  if (!agency) {
+    agency = await Agency.create({
+      homeAgents: customer,
+      products: [],
+    });
+  }
+
+  if (orderStatus === "Successful delivery") {
+    for (const item of orderItems) {
+      const agencyProduct = agency.products.find((p) =>
+        p.product.equals(item.product)
+      );
+      if (agencyProduct) {
+        agencyProduct.quantity += item.quantity;
+      } else {
+        agency.products.push({
+          product: item.product,
+          quantity: item.quantity,
+        });
+      }
+    }
+    await agency.save();
+  }
 
   responseData(
-    { order: orderSystem, agency: newAgency },
+    { order: orderSystem, agency: agency },
     201,
     "Order and Agency created successfully",
     res
   );
 });
 
-exports.createOrderByAgency = catchAsyncErrors(async (req, res, next) => {
-  req.body.user = req.user.id;
-  const { customer } = req.body;
-
-  // Tìm user theo ID của customer và cập nhật giá trị isShop
-  const customerUser = await User.findById(customer);
-
-  if (!customerUser) {
-    return next(new ErrorHander("Customer not found", 404));
-  }
-
-  const orderSystem = await Order.create(req.body);
-  responseData(orderSystem, 201, "Order created successfully", res);
-});
 // Tạo đơn hàng bởi Agency
 exports.createOrderByAgency = catchAsyncErrors(async (req, res, next) => {
   req.body.user = req.user.id;
@@ -107,6 +109,7 @@ exports.createOrderByAgency = catchAsyncErrors(async (req, res, next) => {
 
   responseData(orderSystem, 201, "Order created successfully", res);
 });
+
 // Lấy tất cả đơn hàng của bạn
 exports.getAllOrders = catchAsyncErrors(async (req, res, next) => {
   const { page = 0, size = 10 } = req.body;
@@ -139,7 +142,35 @@ exports.getAllOrders = catchAsyncErrors(async (req, res, next) => {
   responseData(result, 200, null, res);
 });
 
-// Lấy danh sách đơn hàng của Agency
+// Lấy danh sách đơn hàng của Agency no page
+exports.getOrdersByAgencyNotPage = catchAsyncErrors(async (req, res, next) => {
+  const { agencyId } = req.params;
+
+  // Tạo điều kiện truy vấn
+  const query = {
+    customer: agencyId,
+    orderStatus: { $ne: "Successful delivery" },
+  };
+
+  const orders = await Order.find(query)
+    .populate("user", "name email")
+    .populate("orderItems.product", "name price")
+    .populate("customer", "name email");
+
+  // Đếm tổng số đơn hàng của Agency
+  const total = await Order.countDocuments(query);
+
+  // Trả về dữ liệu và thông tin phân trang
+  const result = {
+    orders,
+    pagination: {
+      total,
+    },
+  };
+
+  responseData(result, 200, null, res);
+});
+
 exports.getOrdersByAgency = catchAsyncErrors(async (req, res, next) => {
   const { agencyId } = req.params;
   const { page = 0, size = 10 } = req.body;
@@ -175,27 +206,28 @@ exports.getOrdersByAgency = catchAsyncErrors(async (req, res, next) => {
 // Lấy danh sách đơn hàng của Customer
 exports.getOrdersByCustomer = catchAsyncErrors(async (req, res, next) => {
   const { customerId } = req.params;
-  const { page = 0, size = 10 } = req.body;
+  const { page = 0, size = 10, orderStatus } = req.body;
 
   // Tính toán phân trang
   const limit = parseInt(size);
   const skip = parseInt(page) * limit;
 
-  // Kiểm tra xem customerId có hợp lệ không
-  if (!mongoose.Types.ObjectId.isValid(customerId)) {
-    return next(new ErrorHander("Invalid customer ID", 400));
+  // Tạo điều kiện truy vấn
+  const query = { customer: customerId };
+  if (orderStatus) {
+    query.orderStatus = orderStatus;
   }
 
-  // Lấy danh sách đơn hàng theo customerId với phân trang
-  const orders = await Order.find({ customer: customerId })
+  // Lấy danh sách đơn hàng theo customerId và status với phân trang
+  const orders = await Order.find(query)
     .skip(skip)
     .limit(limit)
     .populate("user", "name email")
     .populate("orderItems.product", "name price")
-    .populate("customer", "name email"); // Populate thông tin khách hàng
+    .populate("customer", "name email");
 
   // Đếm tổng số đơn hàng của khách hàng
-  const total = await Order.countDocuments({ customer: customerId });
+  const total = await Order.countDocuments(query);
 
   // Trả về dữ liệu và thông tin phân trang
   const result = {
@@ -210,6 +242,7 @@ exports.getOrdersByCustomer = catchAsyncErrors(async (req, res, next) => {
   responseData(result, 200, null, res);
 });
 
+// Cập nhật trạng thái đơn hàng
 exports.updateOrderStatus = catchAsyncErrors(async (req, res, next) => {
   const { id } = req.params;
   const { status, orderLocation } = req.body;
@@ -224,20 +257,44 @@ exports.updateOrderStatus = catchAsyncErrors(async (req, res, next) => {
     return next(new ErrorHander("Order has been successful delivery", 400));
   }
 
+  // Nếu trạng thái là "Delivering", cập nhật kho sản phẩm
   if (status === "Delivering") {
     for (const item of order.orderItems) {
       await updateStock(item.product, item.quantity);
     }
   }
 
+  // Nếu trạng thái là "Successful delivery", chuyển sản phẩm sang Agency
+  if (status === "Successful delivery") {
+    const agency = await Agency.findOne({ homeAgents: order.customer });
+
+    if (!agency) {
+      return next(new ErrorHander("Agency not found", 404));
+    }
+
+    for (const item of order.orderItems) {
+      const agencyProduct = agency.products.find((p) =>
+        p.product.equals(item.product)
+      );
+
+      if (agencyProduct) {
+        agencyProduct.quantity += item.quantity;
+      } else {
+        agency.products.push({
+          product: item.product,
+          quantity: item.quantity,
+        });
+      }
+    }
+
+    await agency.save();
+    order.deliveredAt = Date.now();
+  }
+
   order.orderStatus = status;
 
   if (orderLocation) {
     order.orderLocation = orderLocation;
-  }
-
-  if (status === "Successful delivery") {
-    order.deliveredAt = Date.now();
   }
 
   await order.save({ validateBeforeSave: false });
@@ -249,6 +306,7 @@ exports.updateOrderStatus = catchAsyncErrors(async (req, res, next) => {
   );
 });
 
+// Cập nhật kho sản phẩm
 async function updateStock(id, quantity) {
   const product = await Product.findById(id);
 
@@ -264,6 +322,7 @@ async function updateStock(id, quantity) {
 
   await product.save({ validateBeforeSave: false });
 }
+
 // Cập nhật trạng thái đơn hàng của Agency
 exports.updateAgencyOrderStatus = catchAsyncErrors(async (req, res, next) => {
   const { id } = req.params;
