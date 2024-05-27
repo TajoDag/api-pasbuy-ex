@@ -56,6 +56,7 @@ const product = require("./routes/productRoute");
 const size = require("./routes/sizeRoute");
 const orders = require("./routes/orderRouter");
 const agency = require("./routes/agnecyRoute");
+const liveChat = require("./routes/configLiveChatRoute")
 //
 const autoTranslate = require("./utils/translate");
 //
@@ -69,6 +70,7 @@ app.use("/api/v1", product);
 app.use("/api/v1", size);
 app.use("/api/v1", orders);
 app.use("/api/v1", agency);
+app.use("/api/v1", liveChat);
 
 // app.use()
 // Middleware for Errors
