@@ -11,6 +11,8 @@ const {
   deleteUser,
   findAllUsers,
   getAllUser,
+  updateUserSing,
+  updateUserAndPassword,
 } = require("../controllers/userController");
 const { isAuthenticatedUser, authorizeRoles } = require("../middleware/auth");
 
@@ -304,7 +306,7 @@ router.route("/me/update").put(isAuthenticatedUser, updateProfile);
  */
 router
   .route("/admin/users")
-  .get(isAuthenticatedUser, authorizeRoles("admin"), getAllUser);
+  .get(isAuthenticatedUser, authorizeRoles("admin", "agency"), getAllUser);
 
 /**
  * @swagger
@@ -429,5 +431,7 @@ router
 router
   .route("/admin/findAllUsers")
   .post(isAuthenticatedUser, authorizeRoles("admin"), findAllUsers);
+
+router.route("/user/update").put(isAuthenticatedUser, updateUserSing);
 
 module.exports = router;

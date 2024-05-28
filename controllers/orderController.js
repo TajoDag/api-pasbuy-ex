@@ -63,7 +63,7 @@ exports.createOrder = catchAsyncErrors(async (req, res, next) => {
 // Tạo đơn hàng bởi Agency
 exports.createOrderByAgency = catchAsyncErrors(async (req, res, next) => {
   req.body.user = req.user.id;
-  const { customer, orderItems } = req.body;
+  const { customer, orderItems, homeAgentId } = req.body;
 
   // Tìm user theo ID của customer
   const customerUser = await User.findById(customer);
@@ -72,39 +72,16 @@ exports.createOrderByAgency = catchAsyncErrors(async (req, res, next) => {
     return next(new ErrorHander("Customer not found", 404));
   }
 
-  // Tìm Agency của customer
-  const agency = await Agency.findOne({ homeAgents: customer });
+  // Tìm Agency của homeAgentId
+  console.log("homeAgentId:", homeAgentId); // Log để kiểm tra giá trị homeAgentId
+  const agency = await Agency.findOne({ homeAgents: homeAgentId });
 
   if (!agency) {
+    console.log("Agency not found for homeAgentId:", homeAgentId); // Log khi không tìm thấy agency
     return next(new ErrorHander("Agency not found", 404));
   }
 
-  // Kiểm tra và cập nhật kho của Agency
-  for (const item of orderItems) {
-    const agencyProduct = agency.products.find((p) =>
-      p.product.equals(item.product)
-    );
-    if (!agencyProduct) {
-      return next(
-        new ErrorHander(`Product not found in agency's inventory`, 404)
-      );
-    }
-
-    if (agencyProduct.quantity < item.quantity) {
-      return next(
-        new ErrorHander(
-          "Product quantity is not enough in agency's inventory",
-          400
-        )
-      );
-    }
-
-    agencyProduct.quantity -= item.quantity;
-  }
-
-  await agency.save();
-
-  // Tạo đơn hàng
+  // Tạo đơn hàng mà không cần kiểm tra và cập nhật kho của agency
   const orderSystem = await Order.create(req.body);
 
   responseData(orderSystem, 201, "Order created successfully", res);
@@ -171,24 +148,60 @@ exports.getOrdersByAgencyNotPage = catchAsyncErrors(async (req, res, next) => {
   responseData(result, 200, null, res);
 });
 
+// exports.getOrdersByAgency = catchAsyncErrors(async (req, res, next) => {
+//   const { agencyId } = req.params;
+//   const { page = 0, size = 10 } = req.body;
+
+//   // Tính toán phân trang
+//   const limit = parseInt(size);
+//   const skip = parseInt(page) * limit;
+
+//   // Lấy danh sách đơn hàng theo agencyId với phân trang
+//   const orders = await Order.find({ customer: agencyId })
+//     .skip(skip)
+//     .limit(limit)
+//     .populate("user", "name email")
+//     .populate("orderItems.product", "name price")
+//     .populate("customer", "name email");
+
+//   // Đếm tổng số đơn hàng của Agency
+//   const total = await Order.countDocuments({ customer: agencyId });
+
+//   // Trả về dữ liệu và thông tin phân trang
+//   const result = {
+//     orders,
+//     pagination: {
+//       total,
+//       page: parseInt(page),
+//       size: parseInt(size),
+//     },
+//   };
+
+//   responseData(result, 200, null, res);
+// });
 exports.getOrdersByAgency = catchAsyncErrors(async (req, res, next) => {
-  const { agencyId } = req.params;
-  const { page = 0, size = 10 } = req.body;
+  const { page = 0, size = 10, userId } = req.body;
 
   // Tính toán phân trang
   const limit = parseInt(size);
   const skip = parseInt(page) * limit;
 
-  // Lấy danh sách đơn hàng theo agencyId với phân trang
-  const orders = await Order.find({ customer: agencyId })
+  // Tạo điều kiện truy vấn
+  const query = {};
+  if (userId) {
+    query.user = userId;
+  }
+
+  // Lấy danh sách đơn hàng với phân trang
+  const orders = await Order.find(query)
     .skip(skip)
     .limit(limit)
     .populate("user", "name email")
     .populate("orderItems.product", "name price")
     .populate("customer", "name email");
 
-  // Đếm tổng số đơn hàng của Agency
-  const total = await Order.countDocuments({ customer: agencyId });
+  // Đếm tổng số đơn hàng
+  const total = await Order.countDocuments(query);
 
   // Trả về dữ liệu và thông tin phân trang
   const result = {
@@ -328,6 +341,7 @@ exports.updateAgencyOrderStatus = catchAsyncErrors(async (req, res, next) => {
   const { id } = req.params;
   const { status, orderLocation } = req.body;
 
+  // Tìm đơn hàng
   const order = await Order.findById(id);
 
   if (!order) {
@@ -340,7 +354,7 @@ exports.updateAgencyOrderStatus = catchAsyncErrors(async (req, res, next) => {
 
   // Cập nhật kho của Agency khi trạng thái là "Delivering"
   if (status === "Delivering") {
-    const agency = await Agency.findOne({ homeAgents: order.customer });
+    const agency = await Agency.findOne({ homeAgents: order.user }); // Sử dụng 'order.user' để tìm Agency
 
     if (!agency) {
       return next(new ErrorHander("Agency not found", 404));

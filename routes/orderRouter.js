@@ -19,7 +19,7 @@ router
   .route("/agency/order/create")
   .post(
     isAuthenticatedUser,
-    authorizeRoles("admin", "agency"),
+    authorizeRoles("agency"),
     createOrderByAgency
   );
 
@@ -28,7 +28,7 @@ router
   .post(isAuthenticatedUser, authorizeRoles("admin"), getAllOrders);
 
 router
-  .route("/agency/order/all/:agencyId")
+  .route("/agency/order/all")
   .post(
     isAuthenticatedUser,
     authorizeRoles("admin", "agency"),

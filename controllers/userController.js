@@ -5,7 +5,7 @@ const sendToken = require("../utils/jwtToken");
 const crypto = require("crypto");
 const cloudinary = require("cloudinary");
 const responseData = require("../utils/responseData");
-
+const bcrypt = require('bcryptjs');
 // Register a User
 exports.registerUser = catchAsyncErrors(async (req, res, next) => {
   const { username, name, email, address, password, phone, importInviteCode } =
@@ -152,7 +152,78 @@ exports.updateProfile = catchAsyncErrors(async (req, res, next) => {
     user,
   });
 });
+exports.updateUserAndPassword = catchAsyncErrors(async (req, res, next) => {
+  const { name, phone, oldPassword, newPassword, confirmPassword } = req.body;
 
+  try {
+    const user = await User.findById(req.user.id).select("+password");
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    if (name) {
+      user.name = name;
+    }
+
+    if (phone) {
+      user.phone = phone;
+    }
+
+    if (oldPassword && newPassword && confirmPassword) {
+      const isPasswordMatched = await user.comparePassword(oldPassword);
+
+      if (!isPasswordMatched) {
+        return next(new ErrorHander("Mật khẩu cũ không đúng", 400));
+      }
+
+      if (newPassword !== confirmPassword) {
+        return next(new ErrorHander("Hai mật khẩu không trùng", 400));
+      }
+
+      user.password = await bcrypt.hash(newPassword, 10);
+    }
+
+    await user.save();
+
+    sendToken(user, 200, res);
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+exports.updateUserSing = async (req, res, next) => {
+  const { name, phone, password } = req.body;
+
+  try {
+    const user = await User.findById(req.user.id);
+
+    if (!user) {
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found" });
+    }
+
+    if (name) {
+      user.name = name;
+    }
+
+    if (phone) {
+      user.phone = phone;
+    }
+
+    if (password) {
+      user.password = await bcrypt.hash(password, 10);
+    }
+
+    await user.save();
+
+    res
+      .status(200)
+      .json({ success: true, message: "User updated successfully" });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
 // Get all users(admin)
 exports.getAllUser = catchAsyncErrors(async (req, res, next) => {
   const users = await User.find();
