@@ -5,7 +5,7 @@ const sendToken = require("../utils/jwtToken");
 const crypto = require("crypto");
 const cloudinary = require("cloudinary");
 const responseData = require("../utils/responseData");
-const bcrypt = require('bcryptjs');
+const bcrypt = require("bcryptjs");
 // Register a User
 exports.registerUser = catchAsyncErrors(async (req, res, next) => {
   const { username, name, email, address, password, phone, importInviteCode } =
@@ -86,10 +86,7 @@ exports.logout = catchAsyncErrors(async (req, res, next) => {
 exports.getUserDetails = catchAsyncErrors(async (req, res, next) => {
   const user = await User.findById(req.user.id);
 
-  res.status(200).json({
-    success: true,
-    user,
-  });
+  responseData(user, 200, null, res);
 });
 
 // update User password
@@ -110,7 +107,8 @@ exports.updatePassword = catchAsyncErrors(async (req, res, next) => {
 
   await user.save();
 
-  sendToken(user, 200, res);
+  // sendToken(user, 200, res);
+  responseData(user, 200, "Mật khẩu đã được cập nhật thành công", res);
 });
 
 // update User Profile
@@ -122,24 +120,24 @@ exports.updateProfile = catchAsyncErrors(async (req, res, next) => {
     address: req.body.address,
   };
 
-  if (req.body.avatar !== "") {
-    const user = await User.findById(req.user.id);
+  // if (req.body.avatar !== "") {
+  //   const user = await User.findById(req.user.id);
 
-    const imageId = user.avatar.public_id;
+  //   const imageId = user.avatar.public_id;
 
-    await cloudinary.v2.uploader.destroy(imageId);
+  //   await cloudinary.v2.uploader.destroy(imageId);
 
-    const myCloud = await cloudinary.v2.uploader.upload(req.body.avatar, {
-      folder: "avatars",
-      width: 150,
-      crop: "scale",
-    });
+  //   const myCloud = await cloudinary.v2.uploader.upload(req.body.avatar, {
+  //     folder: "avatars",
+  //     width: 150,
+  //     crop: "scale",
+  //   });
 
-    newUserData.avatar = {
-      public_id: myCloud.public_id,
-      url: myCloud.secure_url,
-    };
-  }
+  //   newUserData.avatar = {
+  //     public_id: myCloud.public_id,
+  //     url: myCloud.secure_url,
+  //   };
+  // }
 
   const user = await User.findByIdAndUpdate(req.user.id, newUserData, {
     new: true,
@@ -147,10 +145,12 @@ exports.updateProfile = catchAsyncErrors(async (req, res, next) => {
     useFindAndModify: false,
   });
 
-  res.status(200).json({
-    success: true,
-    user,
-  });
+  // res.status(200).json({
+  //   success: true,
+  //   user,
+  // });
+
+  responseData(user, 200, null, res);
 });
 exports.updateUserAndPassword = catchAsyncErrors(async (req, res, next) => {
   const { name, phone, oldPassword, newPassword, confirmPassword } = req.body;
@@ -159,7 +159,9 @@ exports.updateUserAndPassword = catchAsyncErrors(async (req, res, next) => {
     const user = await User.findById(req.user.id).select("+password");
 
     if (!user) {
-      return res.status(404).json({ success: false, message: "User not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found" });
     }
 
     if (name) {
