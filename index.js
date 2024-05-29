@@ -56,7 +56,8 @@ const product = require("./routes/productRoute");
 const size = require("./routes/sizeRoute");
 const orders = require("./routes/orderRouter");
 const agency = require("./routes/agnecyRoute");
-const liveChat = require("./routes/configLiveChatRoute")
+const liveChat = require("./routes/configLiveChatRoute");
+const logoHeader = reuire("./routes/logoHeaderRoute.js");
 //
 const autoTranslate = require("./utils/translate");
 //
@@ -71,6 +72,7 @@ app.use("/api/v1", size);
 app.use("/api/v1", orders);
 app.use("/api/v1", agency);
 app.use("/api/v1", liveChat);
+app.use("/api/v1", logoHeader);
 
 // app.use()
 // Middleware for Errors
