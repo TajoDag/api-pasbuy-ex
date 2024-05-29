@@ -2,34 +2,31 @@ const catchAsyncErrors = require("../middleware/catchAsyncErrors");
 const cloudinary = require("cloudinary");
 const LogoHeader = require("../models/logoHeaderModel");
 const ErrorHander = require("../utils/errorhander");
+const responseData = require("../utils/responseData");
 
 exports.createLogoHeader = catchAsyncErrors(async (req, res, next) => {
-  let images = [];
+  try {
+    const image = req.body.image;
+    if (!image) {
+      return next(new ErrorHander("Không có hình ảnh", 400));
+    }
 
-  if (typeof req.body.images === "string") {
-    images.push(req.body.images);
-  } else {
-    images = req.body.images;
-  }
-
-  const imagesLinks = [];
-
-  for (let i = 0; i < images.length; i++) {
-    const result = await cloudinary.v2.uploader.upload(images[i], {
+    const result = await cloudinary.v2.uploader.upload(image, {
       folder: "logoHeader",
     });
 
-    imagesLinks.push({
+    req.body.images = {
       public_id: result.public_id,
       url: result.secure_url,
-    });
+    };
+
+    const logo = await LogoHeader.create(req.body);
+
+    responseData(logo, 200, "Thêm logo thành công", res);
+  } catch (error) {
+    console.error("Error creating logo header:", error);
+    responseData(null, 500, "Lỗi khi tạo logo header", res);
   }
-
-  req.body.images = imagesLinks[0];
-
-  const logo = await LogoHeader.create(req.body);
-
-  responseData(logo, 200, "Thêm logo thành công", res);
 });
 exports.updateLogoHeader = catchAsyncErrors(async (req, res, next) => {
   const { id } = req.params;
@@ -58,4 +55,15 @@ exports.updateLogoHeader = catchAsyncErrors(async (req, res, next) => {
   await logo.save();
 
   responseData(logo, 200, "Cập nhật logo thành công", res);
+});
+
+exports.getLogoHeaderDetail = catchAsyncErrors(async (req, res, next) => {
+  const { id } = req.params;
+  const logo = await LogoHeader.findById(id);
+
+  if (!logo) {
+    return next(new ErrorHander("Không tìm thấy logo", 404));
+  }
+
+  responseData(logo, 200, "Lấy chi tiết logo thành công", res);
 });

@@ -57,7 +57,7 @@ const size = require("./routes/sizeRoute");
 const orders = require("./routes/orderRouter");
 const agency = require("./routes/agnecyRoute");
 const liveChat = require("./routes/configLiveChatRoute");
-const logoHeader = reuire("./routes/logoHeaderRoute.js");
+const logoHeader = require("./routes/logoHeaderRoute");
 //
 const autoTranslate = require("./utils/translate");
 //

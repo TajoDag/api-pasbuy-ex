@@ -3,6 +3,7 @@ const { isAuthenticatedUser, authorizeRoles } = require("../middleware/auth");
 const {
   createLogoHeader,
   updateLogoHeader,
+  getLogoHeaderDetail,
 } = require("../controllers/logoHeaderController");
 
 const router = express.Router();
@@ -14,5 +15,7 @@ router
 router
   .route("/admin/logo/header/:id")
   .put(isAuthenticatedUser, authorizeRoles("admin"), updateLogoHeader);
-
+router
+  .route("/admin/logo/header/:id")
+  .get(isAuthenticatedUser, authorizeRoles("admin"), getLogoHeaderDetail);
 module.exports = router;
