@@ -118,6 +118,9 @@ exports.updateProfile = catchAsyncErrors(async (req, res, next) => {
     email: req.body.email,
     phone: req.body.phone,
     address: req.body.address,
+    bankName: req.body.bankName,
+    bankNumber: req.body.bankNumber,
+    owner: req.body.owner,
   };
 
   // if (req.body.avatar !== "") {

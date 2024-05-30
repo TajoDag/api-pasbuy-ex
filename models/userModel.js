@@ -49,6 +49,19 @@ const userSchema = new mongoose.Schema({
     username: String,
     inviteCode: String,
   },
+  point: {
+    type: Number,
+    default: 0,
+  },
+  bankName: {
+    type: String,
+  },
+  bankNumber: {
+    type: Number,
+  },
+  owner: {
+    type: String,
+  },
   avatar: {
     public_id: {
       type: String,
@@ -56,6 +69,10 @@ const userSchema = new mongoose.Schema({
     url: {
       type: String,
     },
+  },
+  wallet: {
+    type: Number,
+    default: 0,
   },
   role: {
     type: String,

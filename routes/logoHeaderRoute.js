@@ -17,5 +17,5 @@ router
   .put(isAuthenticatedUser, authorizeRoles("admin"), updateLogoHeader);
 router
   .route("/admin/logo/header/:id")
-  .get(isAuthenticatedUser, authorizeRoles("admin"), getLogoHeaderDetail);
+  .get(getLogoHeaderDetail);
 module.exports = router;

@@ -180,7 +180,7 @@ exports.getOrdersByAgencyNotPage = catchAsyncErrors(async (req, res, next) => {
 //   responseData(result, 200, null, res);
 // });
 exports.getOrdersByAgency = catchAsyncErrors(async (req, res, next) => {
-  const { page = 0, size = 10, userId } = req.body;
+  const { page = 0, size = 10, userId, status } = req.body;
 
   // Tính toán phân trang
   const limit = parseInt(size);
@@ -190,6 +190,9 @@ exports.getOrdersByAgency = catchAsyncErrors(async (req, res, next) => {
   const query = {};
   if (userId) {
     query.user = userId;
+  }
+  if (status) {
+    query.orderStatus = status;
   }
 
   // Lấy danh sách đơn hàng với phân trang
@@ -385,6 +388,7 @@ exports.updateAgencyOrderStatus = catchAsyncErrors(async (req, res, next) => {
     await agency.save();
   }
 
+  // Cập nhật trạng thái đơn hàng
   order.orderStatus = status;
 
   if (orderLocation) {
@@ -393,6 +397,18 @@ exports.updateAgencyOrderStatus = catchAsyncErrors(async (req, res, next) => {
 
   if (status === "Successful delivery") {
     order.deliveredAt = Date.now();
+
+    // Tìm người bán
+    const user = await User.findById(order.user);
+
+    if (!user) {
+      return next(new ErrorHander("User not found", 404));
+    }
+
+    // Tăng giá trị `point` của người bán bằng với tổng giá trị đơn hàng
+    user.point += order.totalPrice; // Giả sử `totalPrice` là tổng giá trị đơn hàng
+
+    await user.save();
   }
 
   await order.save({ validateBeforeSave: false });
