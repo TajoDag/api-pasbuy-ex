@@ -9,6 +9,10 @@ const {
   getOrdersByCustomer,
   updateAgencyOrderStatus,
   getOrdersByAgencyNotPage,
+  getOrdersWithAdminCustomer,
+  getAllOrdersExcludingAdmin,
+  getSuccessfulDeliveryOrders,
+  getSuccessfulDeliveryOrdersBySeller,
 } = require("../controllers/orderController");
 const router = express.Router();
 router
@@ -17,22 +21,41 @@ router
 
 router
   .route("/agency/order/create")
-  .post(
-    isAuthenticatedUser,
-    authorizeRoles("agency"),
-    createOrderByAgency
-  );
+  .post(isAuthenticatedUser, authorizeRoles("agency"), createOrderByAgency);
+
+// router
+//   .route("/admin/order/all")
+//   .post(isAuthenticatedUser, authorizeRoles("admin"), getAllOrders);
 
 router
   .route("/admin/order/all")
-  .post(isAuthenticatedUser, authorizeRoles("admin"), getAllOrders);
+  .post(
+    isAuthenticatedUser,
+    authorizeRoles("admin"),
+    getAllOrdersExcludingAdmin
+  );
 
+router
+  .route("/admin/order/admin-customers")
+  .post(
+    isAuthenticatedUser,
+    authorizeRoles("admin"),
+    getOrdersWithAdminCustomer
+  );
 router
   .route("/agency/order/all")
   .post(
     isAuthenticatedUser,
     authorizeRoles("admin", "agency"),
     getOrdersByAgency
+  );
+
+router
+  .route("/agency/order/success")
+  .post(
+    isAuthenticatedUser,
+    authorizeRoles("admin", "agency"),
+    getSuccessfulDeliveryOrdersBySeller
   );
 
 router

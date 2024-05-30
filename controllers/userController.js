@@ -237,7 +237,7 @@ exports.getAllUser = catchAsyncErrors(async (req, res, next) => {
 });
 
 exports.findAllUsers = catchAsyncErrors(async (req, res, next) => {
-  const { name, role, page = 0, size = 10 } = req.body; // Lấy thông tin từ body
+  const { name, username, role, page = 0, size = 10 } = req.body;
   const limit = parseInt(size);
   const skip = parseInt(page) * limit;
 
@@ -246,13 +246,19 @@ exports.findAllUsers = catchAsyncErrors(async (req, res, next) => {
   if (name) {
     query.name = { $regex: name, $options: "i" };
   }
+  if (username) {
+    query.username = { $regex: username, $options: "i" };
+  }
   if (role) {
     query.role = role;
   }
   // const query = { role: "agency" };
 
   // Tìm kiếm và phân trang
-  const users = await User.find(query).skip(skip).limit(limit);
+  const users = await User.find(query)
+    .skip(skip)
+    .limit(limit)
+    .sort({ createdAt: -1 });
 
   // Đếm tổng số bản ghi phù hợp
   const total = await User.countDocuments(query);

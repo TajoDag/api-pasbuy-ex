@@ -97,6 +97,7 @@ exports.getAllOrders = catchAsyncErrors(async (req, res, next) => {
 
   // Lấy danh sách đơn hàng với phân trang
   const orders = await Order.find()
+    .sort({ createdAt: -1 })
     .skip(skip)
     .limit(limit)
     .populate("user", "name email")
@@ -118,6 +119,240 @@ exports.getAllOrders = catchAsyncErrors(async (req, res, next) => {
 
   responseData(result, 200, null, res);
 });
+exports.getAllOrdersExcludingAdmin = catchAsyncErrors(
+  async (req, res, next) => {
+    const { page = 0, size = 10 } = req.body;
+
+    // Tính toán phân trang
+    const limit = parseInt(size);
+    const skip = parseInt(page) * limit;
+
+    // Sử dụng aggregate để lọc các đơn hàng có khách hàng không phải là "admin"
+    const orders = await Order.aggregate([
+      {
+        $lookup: {
+          from: "users",
+          localField: "customer",
+          foreignField: "_id",
+          as: "customerDetails",
+        },
+      },
+      {
+        $unwind: "$customerDetails",
+      },
+      {
+        $match: {
+          "customerDetails.role": { $ne: "admin" },
+        },
+      },
+      {
+        $sort: { createdAt: -1 },
+      },
+      {
+        $skip: skip,
+      },
+      {
+        $limit: limit,
+      },
+      {
+        $lookup: {
+          from: "users",
+          localField: "user",
+          foreignField: "_id",
+          as: "userDetails",
+        },
+      },
+      {
+        $unwind: "$userDetails",
+      },
+      {
+        $lookup: {
+          from: "products",
+          localField: "orderItems.product",
+          foreignField: "_id",
+          as: "productDetails",
+        },
+      },
+      {
+        $project: {
+          _id: 1,
+          customer: "$customerDetails",
+          name: 1,
+          phone: 1,
+          email: 1,
+          address: 1,
+          note: 1,
+          orderItems: {
+            name: 1,
+            price: 1,
+            quantity: 1,
+            product: "$productDetails",
+          },
+          deliveredAt: 1,
+          totalPrice: 1,
+          orderStatus: 1,
+          orderLocation: 1,
+          user: "$userDetails",
+          createdAt: 1,
+        },
+      },
+    ]);
+
+    // Đếm tổng số đơn hàng có khách hàng không phải là "admin"
+    const total = await Order.aggregate([
+      {
+        $lookup: {
+          from: "users",
+          localField: "customer",
+          foreignField: "_id",
+          as: "customerDetails",
+        },
+      },
+      {
+        $unwind: "$customerDetails",
+      },
+      {
+        $match: {
+          "customerDetails.role": { $ne: "admin" },
+        },
+      },
+      {
+        $count: "totalCount",
+      },
+    ]);
+
+    const totalOrders = total.length > 0 ? total[0].totalCount : 0;
+
+    // Trả về dữ liệu và thông tin phân trang
+    const result = {
+      orders,
+      pagination: {
+        total: totalOrders,
+        page: parseInt(page),
+        size: parseInt(size),
+      },
+    };
+
+    responseData(result, 200, null, res);
+  }
+);
+exports.getOrdersWithAdminCustomer = catchAsyncErrors(
+  async (req, res, next) => {
+    const { page = 0, size = 10 } = req.body;
+
+    // Tính toán phân trang
+    const limit = parseInt(size);
+    const skip = parseInt(page) * limit;
+
+    // Sử dụng aggregate để lọc các đơn hàng có khách hàng là "admin"
+    const orders = await Order.aggregate([
+      {
+        $lookup: {
+          from: "users",
+          localField: "customer",
+          foreignField: "_id",
+          as: "customerDetails",
+        },
+      },
+      {
+        $unwind: "$customerDetails",
+      },
+      {
+        $match: {
+          "customerDetails.role": "admin",
+        },
+      },
+      {
+        $sort: { createdAt: -1 },
+      },
+      {
+        $skip: skip,
+      },
+      {
+        $limit: limit,
+      },
+      {
+        $lookup: {
+          from: "users",
+          localField: "user",
+          foreignField: "_id",
+          as: "userDetails",
+        },
+      },
+      {
+        $unwind: "$userDetails",
+      },
+      {
+        $lookup: {
+          from: "products",
+          localField: "orderItems.product",
+          foreignField: "_id",
+          as: "productDetails",
+        },
+      },
+      {
+        $project: {
+          _id: 1,
+          customer: "$customerDetails",
+          name: 1,
+          phone: 1,
+          email: 1,
+          address: 1,
+          note: 1,
+          orderItems: {
+            name: 1,
+            price: 1,
+            quantity: 1,
+            product: "$productDetails",
+          },
+          deliveredAt: 1,
+          totalPrice: 1,
+          orderStatus: 1,
+          orderLocation: 1,
+          user: "$userDetails",
+          createdAt: 1,
+        },
+      },
+    ]);
+
+    // Đếm tổng số đơn hàng có khách hàng là "admin"
+    const total = await Order.aggregate([
+      {
+        $lookup: {
+          from: "users",
+          localField: "customer",
+          foreignField: "_id",
+          as: "customerDetails",
+        },
+      },
+      {
+        $unwind: "$customerDetails",
+      },
+      {
+        $match: {
+          "customerDetails.role": "admin",
+        },
+      },
+      {
+        $count: "totalCount",
+      },
+    ]);
+
+    const totalOrders = total.length > 0 ? total[0].totalCount : 0;
+
+    // Trả về dữ liệu và thông tin phân trang
+    const result = {
+      orders,
+      pagination: {
+        total: totalOrders,
+        page: parseInt(page),
+        size: parseInt(size),
+      },
+    };
+
+    responseData(result, 200, null, res);
+  }
+);
 
 // Lấy danh sách đơn hàng của Agency no page
 exports.getOrdersByAgencyNotPage = catchAsyncErrors(async (req, res, next) => {
@@ -197,6 +432,7 @@ exports.getOrdersByAgency = catchAsyncErrors(async (req, res, next) => {
 
   // Lấy danh sách đơn hàng với phân trang
   const orders = await Order.find(query)
+    .sort({ createdAt: -1 })
     .skip(skip)
     .limit(limit)
     .populate("user", "name email")
@@ -236,6 +472,7 @@ exports.getOrdersByCustomer = catchAsyncErrors(async (req, res, next) => {
 
   // Lấy danh sách đơn hàng theo customerId và status với phân trang
   const orders = await Order.find(query)
+    .sort({ createdAt: -1 })
     .skip(skip)
     .limit(limit)
     .populate("user", "name email")
@@ -419,3 +656,47 @@ exports.updateAgencyOrderStatus = catchAsyncErrors(async (req, res, next) => {
     res
   );
 });
+exports.getSuccessfulDeliveryOrdersBySeller = catchAsyncErrors(
+  async (req, res, next) => {
+    const { page = 0, size = 10, userId } = req.body;
+
+    // Tính toán phân trang
+    const limit = parseInt(size);
+    const skip = parseInt(page) * limit;
+
+    // Tạo điều kiện truy vấn
+    const query = {
+      orderStatus: "Successful delivery",
+      user: userId,
+    };
+
+    // Lấy danh sách đơn hàng với phân trang
+    const orders = await Order.find(query)
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .populate("user", "name email")
+      .populate("orderItems.product", "name price")
+      .populate("customer", "name email");
+
+    // Đếm tổng số đơn hàng
+    const total = await Order.countDocuments(query);
+
+    // Trả về dữ liệu và thông tin phân trang
+    const result = {
+      orders,
+      pagination: {
+        total,
+        page: parseInt(page),
+        size: parseInt(size),
+      },
+    };
+
+    responseData(
+      result,
+      200,
+      "Successful delivery orders fetched successfully",
+      res
+    );
+  }
+);

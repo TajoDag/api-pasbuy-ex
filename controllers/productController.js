@@ -140,6 +140,7 @@ exports.getAllProducts = catchAsyncErrors(async (req, res, next) => {
 
   // Lấy danh sách sản phẩm với lọc và phân trang
   const products = await Product.find(filter)
+    .sort({ createdAt: -1 })
     .skip(skip)
     .limit(limit)
     .populate("brand", "_id name")
