@@ -119,13 +119,144 @@ exports.getAllOrders = catchAsyncErrors(async (req, res, next) => {
 
   responseData(result, 200, null, res);
 });
+// exports.getAllOrdersExcludingAdmin = catchAsyncErrors(
+//   async (req, res, next) => {
+//     const { page = 0, size = 10 } = req.body;
+
+//     // Tính toán phân trang
+//     const limit = parseInt(size);
+//     const skip = parseInt(page) * limit;
+
+//     // Sử dụng aggregate để lọc các đơn hàng có khách hàng không phải là "admin"
+//     const orders = await Order.aggregate([
+//       {
+//         $lookup: {
+//           from: "users",
+//           localField: "customer",
+//           foreignField: "_id",
+//           as: "customerDetails",
+//         },
+//       },
+//       {
+//         $unwind: "$customerDetails",
+//       },
+//       {
+//         $match: {
+//           "customerDetails.role": { $ne: "admin" },
+//         },
+//       },
+//       {
+//         $sort: { createdAt: -1 },
+//       },
+//       {
+//         $skip: skip,
+//       },
+//       {
+//         $limit: limit,
+//       },
+//       {
+//         $lookup: {
+//           from: "users",
+//           localField: "user",
+//           foreignField: "_id",
+//           as: "userDetails",
+//         },
+//       },
+//       {
+//         $unwind: "$userDetails",
+//       },
+//       {
+//         $lookup: {
+//           from: "products",
+//           localField: "orderItems.product",
+//           foreignField: "_id",
+//           as: "productDetails",
+//         },
+//       },
+//       {
+//         $project: {
+//           _id: 1,
+//           customer: "$customerDetails",
+//           name: 1,
+//           phone: 1,
+//           email: 1,
+//           address: 1,
+//           note: 1,
+//           orderItems: {
+//             name: 1,
+//             price: 1,
+//             quantity: 1,
+//             product: "$productDetails",
+//           },
+//           deliveredAt: 1,
+//           totalPrice: 1,
+//           orderStatus: 1,
+//           orderLocation: 1,
+//           user: "$userDetails",
+//           createdAt: 1,
+//         },
+//       },
+//     ]);
+
+//     // Đếm tổng số đơn hàng có khách hàng không phải là "admin"
+//     const total = await Order.aggregate([
+//       {
+//         $lookup: {
+//           from: "users",
+//           localField: "customer",
+//           foreignField: "_id",
+//           as: "customerDetails",
+//         },
+//       },
+//       {
+//         $unwind: "$customerDetails",
+//       },
+//       {
+//         $match: {
+//           "customerDetails.role": { $ne: "admin" },
+//         },
+//       },
+//       {
+//         $count: "totalCount",
+//       },
+//     ]);
+
+//     const totalOrders = total.length > 0 ? total[0].totalCount : 0;
+
+//     // Trả về dữ liệu và thông tin phân trang
+//     const result = {
+//       orders,
+//       pagination: {
+//         total: totalOrders,
+//         page: parseInt(page),
+//         size: parseInt(size),
+//       },
+//     };
+
+//     responseData(result, 200, null, res);
+//   }
+// );
+
 exports.getAllOrdersExcludingAdmin = catchAsyncErrors(
   async (req, res, next) => {
-    const { page = 0, size = 10 } = req.body;
+    const { page = 0, size = 10, name = "", status = "" } = req.body;
 
     // Tính toán phân trang
     const limit = parseInt(size);
     const skip = parseInt(page) * limit;
+
+    // Tạo điều kiện lọc
+    let matchConditions = {
+      "customerDetails.role": { $ne: "admin" },
+    };
+
+    if (name) {
+      matchConditions["customerDetails.name"] = { $regex: name, $options: "i" };
+    }
+
+    if (status) {
+      matchConditions["orderStatus"] = status;
+    }
 
     // Sử dụng aggregate để lọc các đơn hàng có khách hàng không phải là "admin"
     const orders = await Order.aggregate([
@@ -141,9 +272,7 @@ exports.getAllOrdersExcludingAdmin = catchAsyncErrors(
         $unwind: "$customerDetails",
       },
       {
-        $match: {
-          "customerDetails.role": { $ne: "admin" },
-        },
+        $match: matchConditions,
       },
       {
         $sort: { createdAt: -1 },
@@ -212,9 +341,7 @@ exports.getAllOrdersExcludingAdmin = catchAsyncErrors(
         $unwind: "$customerDetails",
       },
       {
-        $match: {
-          "customerDetails.role": { $ne: "admin" },
-        },
+        $match: matchConditions,
       },
       {
         $count: "totalCount",
@@ -236,6 +363,7 @@ exports.getAllOrdersExcludingAdmin = catchAsyncErrors(
     responseData(result, 200, null, res);
   }
 );
+
 exports.getOrdersWithAdminCustomer = catchAsyncErrors(
   async (req, res, next) => {
     const { page = 0, size = 10 } = req.body;
