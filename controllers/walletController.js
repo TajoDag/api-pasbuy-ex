@@ -125,7 +125,7 @@ exports.getWithdrawRequests = catchAsyncErrors(async (req, res, next) => {
   })
     .skip(skip)
     .limit(limit)
-    .populate("customer", "name email")
+    .populate("customer", "name bankName  bankNumber owner")
     .populate("handler", "name email");
 
   const total = await Wallet.countDocuments({
