@@ -13,6 +13,7 @@ const {
   getAllUser,
   updateUserSing,
   updateUserAndPassword,
+  getUsersByInviteCode,
 } = require("../controllers/userController");
 const { isAuthenticatedUser, authorizeRoles } = require("../middleware/auth");
 
@@ -433,5 +434,7 @@ router
   .post(isAuthenticatedUser, authorizeRoles("admin"), findAllUsers);
 
 router.route("/user/update").put(isAuthenticatedUser, updateUserSing);
+
+router.route("/user/customers").post(isAuthenticatedUser, getUsersByInviteCode);
 
 module.exports = router;

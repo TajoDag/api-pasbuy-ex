@@ -5,6 +5,7 @@ const {
   createConfigLiveChat,
 } = require("../controllers/configLiveChatController");
 const { isAuthenticatedUser, authorizeRoles } = require("../middleware/auth");
+const { getAccessToken } = require("../controllers/liveChatController");
 
 const router = express.Router();
 
@@ -17,5 +18,9 @@ router
 router
   .route("/admin/configLiveChat")
   .post(isAuthenticatedUser, authorizeRoles("admin"), createConfigLiveChat);
+
+router
+  .route("/admin/livechat/token")
+  .get(isAuthenticatedUser, authorizeRoles("admin"), getAccessToken);
 
 module.exports = router;

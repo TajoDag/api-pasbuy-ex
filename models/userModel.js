@@ -48,6 +48,7 @@ const userSchema = new mongoose.Schema({
     email: String,
     username: String,
     inviteCode: String,
+    _id: String,
   },
   point: {
     type: Number,

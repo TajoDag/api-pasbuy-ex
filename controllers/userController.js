@@ -20,6 +20,7 @@ exports.registerUser = catchAsyncErrors(async (req, res, next) => {
         email: inviter.email,
         username: inviter.username,
         inviteCode: inviter.inviteCode,
+        _id: inviter._id,
       };
     } else {
       return next(new ErrorHander("Invalid invite code", 400));
@@ -337,4 +338,41 @@ exports.deleteUser = catchAsyncErrors(async (req, res, next) => {
     success: true,
     message: "Xóa tài khoản thành công",
   });
+});
+
+exports.getUsersByInviteCode = catchAsyncErrors(async (req, res, next) => {
+  const { inviteCode, page = 0, size = 10 } = req.body;
+  const limit = parseInt(size);
+  const skip = parseInt(page) * limit;
+
+  // Điều kiện tìm kiếm với inviteCode trong userInvite
+  const query = { "userInvite.inviteCode": inviteCode };
+
+  // Tìm kiếm và phân trang
+  const users = await User.find(query)
+    .skip(skip)
+    .limit(limit)
+    .sort({ createdAt: -1 });
+
+  // Đếm tổng số bản ghi phù hợp
+  const total = await User.countDocuments(query);
+
+  // Tính tổng số trang
+  const totalPages = Math.ceil(total / limit);
+
+  // Phản hồi dữ liệu tới client
+  responseData(
+    {
+      users,
+      pagination: {
+        total,
+        page: parseInt(page),
+        size: parseInt(size),
+        totalPages,
+      },
+    },
+    200,
+    "Tìm kiếm thành công",
+    res
+  );
 });

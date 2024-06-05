@@ -119,123 +119,6 @@ exports.getAllOrders = catchAsyncErrors(async (req, res, next) => {
 
   responseData(result, 200, null, res);
 });
-// exports.getAllOrdersExcludingAdmin = catchAsyncErrors(
-//   async (req, res, next) => {
-//     const { page = 0, size = 10 } = req.body;
-
-//     // Tính toán phân trang
-//     const limit = parseInt(size);
-//     const skip = parseInt(page) * limit;
-
-//     // Sử dụng aggregate để lọc các đơn hàng có khách hàng không phải là "admin"
-//     const orders = await Order.aggregate([
-//       {
-//         $lookup: {
-//           from: "users",
-//           localField: "customer",
-//           foreignField: "_id",
-//           as: "customerDetails",
-//         },
-//       },
-//       {
-//         $unwind: "$customerDetails",
-//       },
-//       {
-//         $match: {
-//           "customerDetails.role": { $ne: "admin" },
-//         },
-//       },
-//       {
-//         $sort: { createdAt: -1 },
-//       },
-//       {
-//         $skip: skip,
-//       },
-//       {
-//         $limit: limit,
-//       },
-//       {
-//         $lookup: {
-//           from: "users",
-//           localField: "user",
-//           foreignField: "_id",
-//           as: "userDetails",
-//         },
-//       },
-//       {
-//         $unwind: "$userDetails",
-//       },
-//       {
-//         $lookup: {
-//           from: "products",
-//           localField: "orderItems.product",
-//           foreignField: "_id",
-//           as: "productDetails",
-//         },
-//       },
-//       {
-//         $project: {
-//           _id: 1,
-//           customer: "$customerDetails",
-//           name: 1,
-//           phone: 1,
-//           email: 1,
-//           address: 1,
-//           note: 1,
-//           orderItems: {
-//             name: 1,
-//             price: 1,
-//             quantity: 1,
-//             product: "$productDetails",
-//           },
-//           deliveredAt: 1,
-//           totalPrice: 1,
-//           orderStatus: 1,
-//           orderLocation: 1,
-//           user: "$userDetails",
-//           createdAt: 1,
-//         },
-//       },
-//     ]);
-
-//     // Đếm tổng số đơn hàng có khách hàng không phải là "admin"
-//     const total = await Order.aggregate([
-//       {
-//         $lookup: {
-//           from: "users",
-//           localField: "customer",
-//           foreignField: "_id",
-//           as: "customerDetails",
-//         },
-//       },
-//       {
-//         $unwind: "$customerDetails",
-//       },
-//       {
-//         $match: {
-//           "customerDetails.role": { $ne: "admin" },
-//         },
-//       },
-//       {
-//         $count: "totalCount",
-//       },
-//     ]);
-
-//     const totalOrders = total.length > 0 ? total[0].totalCount : 0;
-
-//     // Trả về dữ liệu và thông tin phân trang
-//     const result = {
-//       orders,
-//       pagination: {
-//         total: totalOrders,
-//         page: parseInt(page),
-//         size: parseInt(size),
-//       },
-//     };
-
-//     responseData(result, 200, null, res);
-//   }
-// );
 
 exports.getAllOrdersExcludingAdmin = catchAsyncErrors(
   async (req, res, next) => {
@@ -511,37 +394,6 @@ exports.getOrdersByAgencyNotPage = catchAsyncErrors(async (req, res, next) => {
   responseData(result, 200, null, res);
 });
 
-// exports.getOrdersByAgency = catchAsyncErrors(async (req, res, next) => {
-//   const { agencyId } = req.params;
-//   const { page = 0, size = 10 } = req.body;
-
-//   // Tính toán phân trang
-//   const limit = parseInt(size);
-//   const skip = parseInt(page) * limit;
-
-//   // Lấy danh sách đơn hàng theo agencyId với phân trang
-//   const orders = await Order.find({ customer: agencyId })
-//     .skip(skip)
-//     .limit(limit)
-//     .populate("user", "name email")
-//     .populate("orderItems.product", "name price")
-//     .populate("customer", "name email");
-
-//   // Đếm tổng số đơn hàng của Agency
-//   const total = await Order.countDocuments({ customer: agencyId });
-
-//   // Trả về dữ liệu và thông tin phân trang
-//   const result = {
-//     orders,
-//     pagination: {
-//       total,
-//       page: parseInt(page),
-//       size: parseInt(size),
-//     },
-//   };
-
-//   responseData(result, 200, null, res);
-// });
 exports.getOrdersByAgency = catchAsyncErrors(async (req, res, next) => {
   const { page = 0, size = 10, userId, status } = req.body;
 
@@ -687,23 +539,6 @@ exports.updateOrderStatus = catchAsyncErrors(async (req, res, next) => {
   );
 });
 
-// Cập nhật kho sản phẩm
-async function updateStock(id, quantity) {
-  const product = await Product.findById(id);
-
-  if (!product) {
-    throw new ErrorHander("No products found", 404);
-  }
-
-  product.Stock -= quantity;
-
-  if (product.Stock < 0) {
-    throw new ErrorHander("Product quantity is not enough", 400);
-  }
-
-  await product.save({ validateBeforeSave: false });
-}
-
 // Cập nhật trạng thái đơn hàng của Agency
 exports.updateAgencyOrderStatus = catchAsyncErrors(async (req, res, next) => {
   const { id } = req.params;
@@ -828,3 +663,98 @@ exports.getSuccessfulDeliveryOrdersBySeller = catchAsyncErrors(
     );
   }
 );
+
+exports.createUserOrder = catchAsyncErrors(async (req, res, next) => {
+  req.body.customer = req.user.id;
+
+  const order = await Order.create(req.body);
+
+  responseData(order, 201, "Order created successfully", res);
+});
+
+exports.getUserOrders = catchAsyncErrors(async (req, res, next) => {
+  const { page = 0, size = 10 } = req.body;
+
+  // Tính toán phân trang
+  const limit = parseInt(size);
+  const skip = parseInt(page) * limit;
+
+  // Lấy danh sách đơn hàng với phân trang chỉ của người dùng hiện tại
+  const orders = await Order.find({ user: req.user.id })
+    .sort({ createdAt: -1 })
+    .skip(skip)
+    .limit(limit)
+    .populate("user", "name email")
+    .populate("orderItems.product", "name price")
+    .populate("customer", "name email");
+
+  // Đếm tổng số đơn hàng của người dùng hiện tại
+  const total = await Order.countDocuments({ user: req.user.id });
+
+  // Trả về dữ liệu và thông tin phân trang
+  const result = {
+    orders,
+    pagination: {
+      total,
+      page: parseInt(page),
+      size: parseInt(size),
+    },
+  };
+
+  responseData(result, 200, null, res);
+});
+
+exports.updateUserOrderStatus = catchAsyncErrors(async (req, res, next) => {
+  const { id } = req.params;
+  const { status, orderLocation } = req.body;
+
+  const order = await Order.findOne({ _id: id, user: req.user.id });
+
+  if (!order) {
+    return next(new ErrorHander("Order not found", 404));
+  }
+
+  if (order.orderStatus === "Successful delivery") {
+    return next(new ErrorHander("Order has been successful delivery", 400));
+  }
+
+  // Nếu trạng thái là "Delivering", cập nhật kho sản phẩm
+  if (status === "Delivering") {
+    for (const item of order.orderItems) {
+      await updateStock(item.product, item.quantity);
+    }
+  }
+
+  if (status === "Successful delivery") {
+    order.deliveredAt = Date.now();
+  }
+  order.orderStatus = status;
+
+  if (orderLocation) {
+    order.orderLocation = orderLocation;
+  }
+  await order.save({ validateBeforeSave: false });
+  responseData(
+    order,
+    200,
+    "Update order status and location successfully",
+    res
+  );
+});
+
+// Cập nhật kho sản phẩm
+async function updateStock(id, quantity) {
+  const product = await Product.findById(id);
+
+  if (!product) {
+    throw new ErrorHander("No products found", 404);
+  }
+
+  product.Stock -= quantity;
+
+  if (product.Stock < 0) {
+    throw new ErrorHander("Product quantity is not enough", 400);
+  }
+
+  await product.save({ validateBeforeSave: false });
+}

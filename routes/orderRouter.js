@@ -13,6 +13,7 @@ const {
   getAllOrdersExcludingAdmin,
   getSuccessfulDeliveryOrders,
   getSuccessfulDeliveryOrdersBySeller,
+  createUserOrder,
 } = require("../controllers/orderController");
 const router = express.Router();
 router
@@ -70,9 +71,9 @@ router
     getOrdersByAgencyNotPage
   );
 
-// router
-//   .route("/customer/order/all/:customerId")
-//   .post(isAuthenticatedUser, getOrdersByCustomer);
+router
+  .route("/customer/order/create")
+  .post(isAuthenticatedUser, createUserOrder);
 
 router
   .route("/admin/order/status/:id")
