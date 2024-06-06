@@ -32,7 +32,7 @@ const orderPSchema = new mongoose.Schema({
       },
       quantity: {
         type: Number,
-        required: true,
+        // required: true,
       },
       product: {
         type: mongoose.Schema.ObjectId,
@@ -46,7 +46,7 @@ const orderPSchema = new mongoose.Schema({
   },
   totalPrice: {
     type: Number,
-    required: true,
+    // required: true,
     default: 0,
   },
   orderStatus: {

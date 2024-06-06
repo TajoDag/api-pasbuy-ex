@@ -60,6 +60,111 @@ exports.createOrder = catchAsyncErrors(async (req, res, next) => {
   );
 });
 
+// create order by agency
+exports.createOrderForAgency = catchAsyncErrors(async (req, res, next) => {
+  // req.body.user = req.user.id;
+  const { customer, orderItems, user } = req.body;
+
+  // Tìm user theo ID của customer và cập nhật giá trị isShop
+  const customerUser = await User.findById(customer);
+
+  if (!customerUser) {
+    return next(new ErrorHander("Customer not found", 404));
+  }
+
+  customerUser.isShop = true;
+  customerUser.role = "agency";
+  await customerUser.save();
+
+  // Tạo đơn hàng
+  const orderSystem = await Order.create({
+    ...req.body,
+    orderStatus: "Pending Payment",
+  });
+
+  // Tạo hoặc cập nhật Agency
+  let agency = await Agency.findOne({ homeAgents: customer });
+
+  if (!agency) {
+    agency = await Agency.create({
+      homeAgents: customer,
+      products: [],
+    });
+  }
+
+  // Thêm sản phẩm vào agency với số lượng là 0
+  for (const item of orderItems) {
+    const agencyProduct = agency.products.find((p) =>
+      p.product.equals(item.product)
+    );
+    if (agencyProduct) {
+      agencyProduct.quantity = 0;
+    } else {
+      agency.products.push({
+        product: item.product,
+        quantity: 0,
+      });
+    }
+  }
+  await agency.save();
+
+  responseData(
+    { order: orderSystem, agency: agency },
+    201,
+    "Order and Agency created successfully",
+    res
+  );
+});
+
+// update order Agency
+exports.updateOrderStatusForAgency = catchAsyncErrors(
+  async (req, res, next) => {
+    const { orderId, orderStatus, orderItems } = req.body;
+
+    const order = await Order.findById(orderId);
+
+    if (!order) {
+      return next(new ErrorHander("Order not found", 404));
+    }
+
+    // Cập nhật trạng thái đơn hàng
+    order.orderStatus = orderStatus;
+
+    if (orderStatus === "Paid") {
+      // Cập nhật số lượng sản phẩm trong agency
+      const agency = await Agency.findOne({ homeAgents: order.customer });
+
+      if (!agency) {
+        return next(new ErrorHander("Agency not found", 404));
+      }
+
+      for (const item of orderItems) {
+        const agencyProduct = agency.products.find((p) =>
+          p.product.equals(item.product)
+        );
+        if (agencyProduct) {
+          agencyProduct.quantity += item.quantity;
+        } else {
+          agency.products.push({
+            product: item.product,
+            quantity: item.quantity,
+          });
+        }
+      }
+      await agency.save();
+    }
+
+    await order.save();
+
+    responseData(
+      { order: order },
+      200,
+      "Order status updated successfully",
+      res
+    );
+  }
+);
+
 // Tạo đơn hàng bởi Agency
 exports.createOrderByAgency = catchAsyncErrors(async (req, res, next) => {
   req.body.user = req.user.id;
@@ -342,6 +447,123 @@ exports.getOrdersWithAdminCustomer = catchAsyncErrors(
       {
         $match: {
           "customerDetails.role": "admin",
+        },
+      },
+      {
+        $count: "totalCount",
+      },
+    ]);
+
+    const totalOrders = total.length > 0 ? total[0].totalCount : 0;
+
+    // Trả về dữ liệu và thông tin phân trang
+    const result = {
+      orders,
+      pagination: {
+        total: totalOrders,
+        page: parseInt(page),
+        size: parseInt(size),
+      },
+    };
+
+    responseData(result, 200, null, res);
+  }
+);
+exports.getOrdersWithAgencyCustomer = catchAsyncErrors(
+  async (req, res, next) => {
+    const { page = 0, size = 10 } = req.body;
+
+    // Tính toán phân trang
+    const limit = parseInt(size);
+    const skip = parseInt(page) * limit;
+
+    // Sử dụng aggregate để lọc các đơn hàng có khách hàng là "agency"
+    const orders = await Order.aggregate([
+      {
+        $lookup: {
+          from: "users",
+          localField: "customer",
+          foreignField: "_id",
+          as: "customerDetails",
+        },
+      },
+      {
+        $unwind: "$customerDetails",
+      },
+      {
+        $match: {
+          "customerDetails.role": "agency",
+        },
+      },
+      {
+        $sort: { createdAt: -1 },
+      },
+      {
+        $skip: skip,
+      },
+      {
+        $limit: limit,
+      },
+      {
+        $lookup: {
+          from: "users",
+          localField: "user",
+          foreignField: "_id",
+          as: "userDetails",
+        },
+      },
+      {
+        $unwind: "$userDetails",
+      },
+      {
+        $lookup: {
+          from: "products",
+          localField: "orderItems.product",
+          foreignField: "_id",
+          as: "productDetails",
+        },
+      },
+      {
+        $project: {
+          _id: 1,
+          customer: "$customerDetails",
+          name: 1,
+          phone: 1,
+          email: 1,
+          address: 1,
+          note: 1,
+          orderItems: {
+            name: 1,
+            price: 1,
+            quantity: 1,
+            product: "$productDetails",
+          },
+          deliveredAt: 1,
+          totalPrice: 1,
+          orderStatus: 1,
+          orderLocation: 1,
+          user: "$userDetails",
+          createdAt: 1,
+        },
+      },
+    ]);
+
+    // Đếm tổng số đơn hàng có khách hàng là "agency"
+    const total = await Order.aggregate([
+      {
+        $lookup: {
+          from: "users",
+          localField: "customer",
+          foreignField: "_id",
+          as: "customerDetails",
+        },
+      },
+      {
+        $unwind: "$customerDetails",
+      },
+      {
+        $match: {
+          "customerDetails.role": "agency",
         },
       },
       {

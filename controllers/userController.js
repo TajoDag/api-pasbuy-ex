@@ -7,11 +7,53 @@ const cloudinary = require("cloudinary");
 const responseData = require("../utils/responseData");
 const bcrypt = require("bcryptjs");
 // Register a User
+// exports.registerUser = catchAsyncErrors(async (req, res, next) => {
+//   const { username, name, email, address, password, phone, importInviteCode } =
+//     req.body;
+
+//   let userInvite = null;
+//   if (importInviteCode) {
+//     const inviter = await User.findOne({ inviteCode: importInviteCode });
+//     if (inviter) {
+//       userInvite = {
+//         name: inviter.name,
+//         email: inviter.email,
+//         username: inviter.username,
+//         inviteCode: inviter.inviteCode,
+//         _id: inviter._id,
+//       };
+//     } else {
+//       return next(new ErrorHander("Invalid invite code", 400));
+//     }
+//   }
+
+//   const newInviteCode = crypto.randomBytes(4).toString("hex");
+
+//   const user = await User.create({
+//     username,
+//     name,
+//     email,
+//     password,
+//     phone,
+//     address,
+//     inviteCode: newInviteCode,
+//     userInvite,
+//     avatar: {
+//       public_id: "sample id",
+//       url: "https://thuvienplus.com/themes/cynoebook/public/images/default-user-image.png",
+//     },
+//   });
+
+//   sendToken(user, 201, res, "User registered successfully");
+// });
 exports.registerUser = catchAsyncErrors(async (req, res, next) => {
   const { username, name, email, address, password, phone, importInviteCode } =
     req.body;
 
   let userInvite = null;
+  let role = "user";
+  let isShop = false;
+
   if (importInviteCode) {
     const inviter = await User.findOne({ inviteCode: importInviteCode });
     if (inviter) {
@@ -22,12 +64,19 @@ exports.registerUser = catchAsyncErrors(async (req, res, next) => {
         inviteCode: inviter.inviteCode,
         _id: inviter._id,
       };
+
+      // Kiểm tra role của người giới thiệu
+      if (inviter.role === "admin") {
+        role = "agency";
+        isShop = true;
+      }
     } else {
       return next(new ErrorHander("Invalid invite code", 400));
     }
   }
 
-  const newInviteCode = crypto.randomBytes(4).toString("hex");
+  // Sinh mã giới thiệu với chữ PB ở đầu và 6 số ở phía sau
+  const newInviteCode = `PB${crypto.randomBytes(3).toString("hex")}`;
 
   const user = await User.create({
     username,
@@ -38,15 +87,24 @@ exports.registerUser = catchAsyncErrors(async (req, res, next) => {
     address,
     inviteCode: newInviteCode,
     userInvite,
+    role,
+    isShop,
     avatar: {
       public_id: "sample id",
       url: "https://thuvienplus.com/themes/cynoebook/public/images/default-user-image.png",
     },
   });
 
+  // Tạo bảng agency nếu role là agency
+  if (role === "agency") {
+    await Agency.create({
+      homeAgents: user._id,
+      products: [],
+    });
+  }
+
   sendToken(user, 201, res, "User registered successfully");
 });
-
 // Login User
 exports.loginUser = catchAsyncErrors(async (req, res, next) => {
   const { username, password } = req.body;
@@ -376,3 +434,4 @@ exports.getUsersByInviteCode = catchAsyncErrors(async (req, res, next) => {
     res
   );
 });
+

@@ -14,6 +14,9 @@ const {
   getSuccessfulDeliveryOrders,
   getSuccessfulDeliveryOrdersBySeller,
   createUserOrder,
+  createOrderForAgency,
+  updateOrderStatusForAgency,
+  getOrdersWithAgencyCustomer,
 } = require("../controllers/orderController");
 const router = express.Router();
 router
@@ -85,6 +88,30 @@ router
     isAuthenticatedUser,
     authorizeRoles("admin", "agency"),
     updateAgencyOrderStatus
+  );
+
+router
+  .route("/agency/order/to-house")
+  .post(
+    isAuthenticatedUser,
+    authorizeRoles("admin", "agency"),
+    createOrderForAgency
+  );
+
+router
+  .route("/admin/order/status-agency/:id")
+  .put(
+    isAuthenticatedUser,
+    authorizeRoles("admin"),
+    updateOrderStatusForAgency
+  );
+
+router
+  .route("/admin/order/get-orders-with-agency-customer")
+  .post(
+    isAuthenticatedUser,
+    authorizeRoles("admin"),
+    getOrdersWithAgencyCustomer
   );
 
 module.exports = router;
