@@ -5,6 +5,8 @@ const responseData = require("../utils/responseData");
 const Order = require("../models/order");
 const Agency = require("../models/agencyModel");
 const User = require("../models/userModel");
+const mongoose = require("mongoose");
+const ObjectId = mongoose.Types.ObjectId;
 
 // Tạo đơn hàng và Agency
 exports.createOrder = catchAsyncErrors(async (req, res, next) => {
@@ -139,16 +141,26 @@ exports.updateOrderStatusForAgency = catchAsyncErrors(
       }
 
       for (const item of orderItems) {
+        const productId = new ObjectId(item.productId); // Sử dụng 'new' để khởi tạo ObjectId
         const agencyProduct = agency.products.find((p) =>
-          p.product.equals(item.product)
+          p.product.equals(productId)
         );
         if (agencyProduct) {
           agencyProduct.quantity += item.quantity;
         } else {
           agency.products.push({
-            product: item.product,
+            product: productId, // Sử dụng ObjectId cho product
             quantity: item.quantity,
           });
+        }
+
+        // Cập nhật thông tin sản phẩm trong đơn hàng
+        const orderProduct = order.orderItems.find((p) =>
+          p.product.equals(productId)
+        );
+        if (orderProduct) {
+          orderProduct.quantity = item.quantity;
+          orderProduct.totalAmount = item.totalAmount;
         }
       }
       await agency.save();
@@ -159,7 +171,7 @@ exports.updateOrderStatusForAgency = catchAsyncErrors(
     responseData(
       { order: order },
       200,
-      "Order status updated successfully",
+      "Order status and items updated successfully",
       res
     );
   }

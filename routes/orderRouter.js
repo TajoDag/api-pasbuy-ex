@@ -99,7 +99,7 @@ router
   );
 
 router
-  .route("/admin/order/status-agency/:id")
+  .route("/admin/order/status-agency")
   .put(
     isAuthenticatedUser,
     authorizeRoles("admin"),

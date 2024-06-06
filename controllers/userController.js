@@ -1,5 +1,6 @@
 const ErrorHander = require("../utils/errorhander");
 const catchAsyncErrors = require("../middleware/catchAsyncErrors");
+const Agency = require("../models/agencyModel");
 const User = require("../models/userModel");
 const sendToken = require("../utils/jwtToken");
 const crypto = require("crypto");
@@ -76,7 +77,7 @@ exports.registerUser = catchAsyncErrors(async (req, res, next) => {
   }
 
   // Sinh mã giới thiệu với chữ PB ở đầu và 6 số ở phía sau
-  const newInviteCode = `PB${crypto.randomBytes(3).toString("hex")}`;
+  const newInviteCode = `PB${Math.floor(100000 + Math.random() * 900000)}`;
 
   const user = await User.create({
     username,
@@ -434,4 +435,3 @@ exports.getUsersByInviteCode = catchAsyncErrors(async (req, res, next) => {
     res
   );
 });
-
