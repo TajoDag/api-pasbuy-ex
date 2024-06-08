@@ -650,7 +650,7 @@ exports.getOrdersByAgency = catchAsyncErrors(async (req, res, next) => {
     .skip(skip)
     .limit(limit)
     .populate("user", "name email")
-    .populate("orderItems.product", "name price")
+    .populate("orderItems.product", "name price images")
     .populate("customer", "name email");
 
   // Đếm tổng số đơn hàng

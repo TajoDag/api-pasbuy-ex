@@ -7,50 +7,22 @@ const crypto = require("crypto");
 const cloudinary = require("cloudinary");
 const responseData = require("../utils/responseData");
 const bcrypt = require("bcryptjs");
+
 // Register a User
-// exports.registerUser = catchAsyncErrors(async (req, res, next) => {
-//   const { username, name, email, address, password, phone, importInviteCode } =
-//     req.body;
-
-//   let userInvite = null;
-//   if (importInviteCode) {
-//     const inviter = await User.findOne({ inviteCode: importInviteCode });
-//     if (inviter) {
-//       userInvite = {
-//         name: inviter.name,
-//         email: inviter.email,
-//         username: inviter.username,
-//         inviteCode: inviter.inviteCode,
-//         _id: inviter._id,
-//       };
-//     } else {
-//       return next(new ErrorHander("Invalid invite code", 400));
-//     }
-//   }
-
-//   const newInviteCode = crypto.randomBytes(4).toString("hex");
-
-//   const user = await User.create({
-//     username,
-//     name,
-//     email,
-//     password,
-//     phone,
-//     address,
-//     inviteCode: newInviteCode,
-//     userInvite,
-//     avatar: {
-//       public_id: "sample id",
-//       url: "https://thuvienplus.com/themes/cynoebook/public/images/default-user-image.png",
-//     },
-//   });
-
-//   sendToken(user, 201, res, "User registered successfully");
-// });
 exports.registerUser = catchAsyncErrors(async (req, res, next) => {
   const { username, name, email, address, password, phone, importInviteCode } =
     req.body;
 
+  const existingUserByUsername = await User.findOne({ username });
+  if (existingUserByUsername) {
+    return next(new ErrorHander("Username already exists", 400));
+  }
+
+  // Kiểm tra email đã tồn tại
+  const existingUserByEmail = await User.findOne({ email });
+  if (existingUserByEmail) {
+    return next(new ErrorHander("Email already exists", 400));
+  }
   let userInvite = null;
   let role = "user";
   let isShop = false;
@@ -297,22 +269,24 @@ exports.getAllUser = catchAsyncErrors(async (req, res, next) => {
 });
 
 exports.findAllUsers = catchAsyncErrors(async (req, res, next) => {
-  const { name, username, role, page = 0, size = 10 } = req.body;
+  const { search, role, page = 0, size = 10 } = req.body;
   const limit = parseInt(size);
   const skip = parseInt(page) * limit;
 
-  const query = {};
+  const query = {
+    role: { $ne: "Super Admin" }, // Thêm điều kiện để không tìm thấy role Super Admin
+  };
 
-  if (name) {
-    query.name = { $regex: name, $options: "i" };
+  if (search) {
+    query.$or = [
+      { name: { $regex: search, $options: "i" } },
+      { username: { $regex: search, $options: "i" } },
+    ];
   }
-  if (username) {
-    query.username = { $regex: username, $options: "i" };
-  }
+
   if (role) {
     query.role = role;
   }
-  // const query = { role: "agency" };
 
   // Tìm kiếm và phân trang
   const users = await User.find(query)
@@ -334,6 +308,7 @@ exports.findAllUsers = catchAsyncErrors(async (req, res, next) => {
         total,
         page: parseInt(page),
         size: parseInt(size),
+        totalPages,
       },
     },
     200,
@@ -352,31 +327,32 @@ exports.getSingleUser = catchAsyncErrors(async (req, res, next) => {
     );
   }
 
-  res.status(200).json({
-    success: true,
-    user,
-  });
+  responseData(user, 200, "Tìm kiếm thành công", res);
 });
 
 // update User Role -- Admin
 exports.updateUserRole = catchAsyncErrors(async (req, res, next) => {
   const newUserData = {
     name: req.body.name,
-    email: req.body.email,
     role: req.body.role,
+    phone: req.body.phone,
+    bankName: req.body.bankName,
+    bankNumber: req.body.bankNumber,
+    owner: req.body.owner,
   };
 
-  await User.findByIdAndUpdate(req.params.id, newUserData, {
+  const user = await User.findByIdAndUpdate(req.params.id, newUserData, {
     new: true,
     runValidators: true,
     useFindAndModify: false,
   });
 
-  res.status(200).json({
-    success: true,
-  });
-});
+  if (!user) {
+    return responseData(null, 404, "Không tìm thấy người dùng", res);
+  }
 
+  responseData(user, 200, "Cập nhật thành công", res);
+});
 // Delete User --Admin
 exports.deleteUser = catchAsyncErrors(async (req, res, next) => {
   const user = await User.findById(req.params.id);
