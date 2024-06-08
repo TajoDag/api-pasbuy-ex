@@ -12,7 +12,6 @@ const errorMiddleware = require("./middleware/error");
 
 // Initialize dotenv configuration
 require("dotenv").config();
-
 // Handling Uncaught Exception
 process.on("uncaughtException", (err) => {
   console.log(`Error: ${err.message}`);
@@ -61,6 +60,8 @@ const logoHeader = require("./routes/logoHeaderRoute");
 const logoFooter = require("./routes/logoFooterRoute");
 const banner = require("./routes/bannerRoute");
 const wallet = require("./routes/walletRoute");
+const chat = require("./routes/chatRoute");
+const message = require("./routes/messageRoute");
 
 //
 const autoTranslate = require("./utils/translate");
@@ -80,11 +81,14 @@ app.use("/api/v1", logoHeader);
 app.use("/api/v1", logoFooter);
 app.use("/api/v1", banner);
 app.use("/api/v1", wallet);
+app.use("/api/v1", chat);
+app.use("/api/v1", message);
 
 // app.use()
 // Middleware for Errors
 app.use(errorMiddleware);
 app.use("/api/v1/translate", autoTranslate);
+
 // Start the server
 const PORT = process.env.PORT;
 app.listen(PORT, () => {

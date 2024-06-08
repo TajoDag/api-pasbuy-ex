@@ -2,7 +2,10 @@ const mongoose = require("mongoose");
 
 const chatSchema = new mongoose.Schema({
 
+  members: {
+    type: Array,
+  },
+  timestamp: { type: Date, default: Date.now },
+});
 
-})
-
-module.exports = moÍngoose.model("Chat", chatSchema);
+module.exports = mongoose.model("Chat", chatSchema);
