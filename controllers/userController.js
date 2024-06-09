@@ -10,7 +10,7 @@ const bcrypt = require("bcryptjs");
 
 // Register a User
 exports.registerUser = catchAsyncErrors(async (req, res, next) => {
-  const { username, name, email, address, password, phone, importInviteCode } =
+  const { username, name, address, password, phone, importInviteCode } =
     req.body;
 
   const existingUserByUsername = await User.findOne({ username });
@@ -18,11 +18,6 @@ exports.registerUser = catchAsyncErrors(async (req, res, next) => {
     return next(new ErrorHander("Username already exists", 400));
   }
 
-  // Kiểm tra email đã tồn tại
-  const existingUserByEmail = await User.findOne({ email });
-  if (existingUserByEmail) {
-    return next(new ErrorHander("Email already exists", 400));
-  }
   let userInvite = null;
   let role = "user";
   let isShop = false;

@@ -19,7 +19,6 @@ const userSchema = new mongoose.Schema({
     minLength: [4, "Minimum name 4 characters"],
   },
   email: {
-    unique: true,
     type: String,
     validate: [validator.isEmail, "Email format is incorrect"],
   },
