@@ -49,7 +49,6 @@ exports.registerUser = catchAsyncErrors(async (req, res, next) => {
   const user = await User.create({
     username,
     name,
-    email,
     password,
     phone,
     address,
