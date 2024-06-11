@@ -122,7 +122,7 @@ exports.updatePassword = catchAsyncErrors(async (req, res, next) => {
   const isPasswordMatched = await user.comparePassword(req.body.oldPassword);
 
   if (!isPasswordMatched) {
-    return next(new ErrorHander(" mật khẩu cũ không đúng", 400));
+    return next(new ErrorHander("Mật khẩu cũ không đúng", 400));
   }
 
   if (req.body.newPassword !== req.body.confirmPassword) {
@@ -133,10 +133,8 @@ exports.updatePassword = catchAsyncErrors(async (req, res, next) => {
 
   await user.save();
 
-  // sendToken(user, 200, res);
   responseData(user, 200, "Mật khẩu đã được cập nhật thành công", res);
 });
-
 // update User Profile
 exports.updateProfile = catchAsyncErrors(async (req, res, next) => {
   const newUserData = {
@@ -404,4 +402,44 @@ exports.getUsersByInviteCode = catchAsyncErrors(async (req, res, next) => {
     "Tìm kiếm thành công",
     res
   );
+});
+
+exports.resetUserPassword = catchAsyncErrors(async (req, res, next) => {
+  const { userId, newPassword } = req.body;
+
+  // Kiểm tra xem người dùng có tồn tại không
+  const user = await User.findById(userId);
+
+  if (!user) {
+    return next(new ErrorHander("User not found", 404));
+  }
+
+  // Cập nhật mật khẩu mới cho người dùng và đánh dấu là mật khẩu được cấp lại
+  user.password = newPassword;
+  user.isResetPassword = true;
+
+  await user.save();
+
+  // Tạo token mới
+  const token = user.getJWTToken();
+
+  // Thiết lập cookie token
+  const options = {
+    expires: new Date(
+      Date.now() + process.env.COOKIE_EXPIRE * 24 * 60 * 60 * 1000
+    ),
+    httpOnly: true,
+  };
+
+  res
+    .status(200)
+    .cookie("token", token, options)
+    .json({
+      success: true,
+      message: "Password has been reset successfully",
+      data: {
+        user,
+        forceLogout: true,
+      },
+    });
 });

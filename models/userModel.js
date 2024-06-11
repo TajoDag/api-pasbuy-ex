@@ -88,12 +88,31 @@ const userSchema = new mongoose.Schema({
   resetPasswordExpire: Date,
 });
 
+userSchema
+  .virtual("isResetPassword")
+  .get(function () {
+    return this._isResetPassword;
+  })
+  .set(function (value) {
+    this._isResetPassword = value;
+  });
+
+// userSchema.pre("save", async function (next) {
+//   if (!this.isModified("password") || this.isResetPassword) {
+//     next();
+//   } else {
+//     this.password = await bcrypt.hash(this.password, 10);
+//     next();
+//   }
+// });
+
 userSchema.pre("save", async function (next) {
   if (!this.isModified("password")) {
     next();
+  } else {
+    this.password = await bcrypt.hash(this.password, 10);
+    next();
   }
-
-  this.password = await bcrypt.hash(this.password, 10);
 });
 
 // JWT TOKEN

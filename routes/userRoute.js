@@ -14,6 +14,7 @@ const {
   updateUserSing,
   updateUserAndPassword,
   getUsersByInviteCode,
+  resetUserPassword,
 } = require("../controllers/userController");
 const { isAuthenticatedUser, authorizeRoles } = require("../middleware/auth");
 
@@ -456,5 +457,9 @@ router
 router.route("/user/update").put(isAuthenticatedUser, updateUserSing);
 
 router.route("/user/customers").post(isAuthenticatedUser, getUsersByInviteCode);
+
+router.route("/user/customers").post(isAuthenticatedUser, getUsersByInviteCode);
+
+router.route("/admin/reset-password").post(isAuthenticatedUser, authorizeRoles("admin", "Super Admin"), resetUserPassword);
 
 module.exports = router;
