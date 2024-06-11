@@ -10,11 +10,11 @@ const router = express.Router();
 
 router
   .route("/admin/logo/header")
-  .post(isAuthenticatedUser, authorizeRoles("admin"), createLogoHeader);
+  .post(isAuthenticatedUser, authorizeRoles("admin", "Super Admin"), createLogoHeader);
 
 router
   .route("/admin/logo/header/:id")
-  .put(isAuthenticatedUser, authorizeRoles("admin"), updateLogoHeader);
+  .put(isAuthenticatedUser, authorizeRoles("admin", "Super Admin"), updateLogoHeader);
 router
   .route("/admin/logo/header/:id")
   .get(getLogoHeaderDetail);

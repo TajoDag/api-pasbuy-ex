@@ -10,7 +10,7 @@ const router = express.Router();
 router.get(
   "/agency/homeAgent/:homeAgentId",
   isAuthenticatedUser,
-  authorizeRoles("agency"),
+  authorizeRoles("agency", "Super Admin"),
   getAgencyByHomeAgentId
 );
 
@@ -18,7 +18,7 @@ router
   .route("/agency/product/update")
   .put(
     isAuthenticatedUser,
-    authorizeRoles("agency"),
+    authorizeRoles("agency", "Super Admin"),
     updateProductPriceInAgency
   );
 

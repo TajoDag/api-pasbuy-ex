@@ -11,11 +11,19 @@ const router = express.Router();
 
 router
   .route("/admin/banner/create")
-  .post(isAuthenticatedUser, authorizeRoles("admin"), createBanner);
+  .post(
+    isAuthenticatedUser,
+    authorizeRoles("admin", "Super Admin"),
+    createBanner
+  );
 
 router
   .route("/admin/banner/:id")
-  .put(isAuthenticatedUser, authorizeRoles("admin"), updateBanner);
+  .put(
+    isAuthenticatedUser,
+    authorizeRoles("admin", "Super Admin"),
+    updateBanner
+  );
 router.route("/banner/:id").get(getBannerDetail);
 router.get("/banners", getBanners);
 

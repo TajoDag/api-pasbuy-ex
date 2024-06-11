@@ -13,14 +13,26 @@ router.route("/configLiveChat/:id").get(getDetailConfigLiveChat);
 
 router
   .route("/admin/configLiveChat/:id")
-  .put(isAuthenticatedUser, authorizeRoles("admin"), updateConfigLiveChat);
+  .put(
+    isAuthenticatedUser,
+    authorizeRoles("admin", "Super Admin"),
+    updateConfigLiveChat
+  );
 
 router
   .route("/admin/configLiveChat")
-  .post(isAuthenticatedUser, authorizeRoles("admin"), createConfigLiveChat);
+  .post(
+    isAuthenticatedUser,
+    authorizeRoles("admin", "Super Admin"),
+    createConfigLiveChat
+  );
 
 router
   .route("/admin/livechat/token")
-  .get(isAuthenticatedUser, authorizeRoles("admin"), getAccessToken);
+  .get(
+    isAuthenticatedUser,
+    authorizeRoles("admin", "Super Admin"),
+    getAccessToken
+  );
 
 module.exports = router;

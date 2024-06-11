@@ -307,7 +307,11 @@ router.route("/me/update").put(isAuthenticatedUser, updateProfile);
  */
 router
   .route("/admin/users")
-  .get(isAuthenticatedUser, authorizeRoles("admin", "agency"), getAllUser);
+  .get(
+    isAuthenticatedUser,
+    authorizeRoles("admin", "agency", "Super Admin"),
+    getAllUser
+  );
 
 /**
  * @swagger
@@ -425,13 +429,29 @@ router
  */
 router
   .route("/admin/user/:id")
-  .get(isAuthenticatedUser, authorizeRoles("admin"), getSingleUser)
-  .put(isAuthenticatedUser, authorizeRoles("admin"), updateUserRole)
-  .delete(isAuthenticatedUser, authorizeRoles("admin"), deleteUser);
+  .get(
+    isAuthenticatedUser,
+    authorizeRoles("admin", "Super Admin"),
+    getSingleUser
+  )
+  .put(
+    isAuthenticatedUser,
+    authorizeRoles("admin", "Super Admin"),
+    updateUserRole
+  )
+  .delete(
+    isAuthenticatedUser,
+    authorizeRoles("admin", "Super Admin"),
+    deleteUser
+  );
 
 router
   .route("/admin/findAllUsers")
-  .post(isAuthenticatedUser, authorizeRoles("admin"), findAllUsers);
+  .post(
+    isAuthenticatedUser,
+    authorizeRoles("admin", "Super Admin"),
+    findAllUsers
+  );
 
 router.route("/user/update").put(isAuthenticatedUser, updateUserSing);
 

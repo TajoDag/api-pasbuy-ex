@@ -21,11 +21,19 @@ const {
 const router = express.Router();
 router
   .route("/admin/order/create")
-  .post(isAuthenticatedUser, authorizeRoles("admin"), createOrder);
+  .post(
+    isAuthenticatedUser,
+    authorizeRoles("admin", "Super Admin"),
+    createOrder
+  );
 
 router
   .route("/agency/order/create")
-  .post(isAuthenticatedUser, authorizeRoles("agency"), createOrderByAgency);
+  .post(
+    isAuthenticatedUser,
+    authorizeRoles("agency", "Super Admin"),
+    createOrderByAgency
+  );
 
 // router
 //   .route("/admin/order/all")
@@ -35,7 +43,7 @@ router
   .route("/admin/order/all")
   .post(
     isAuthenticatedUser,
-    authorizeRoles("admin"),
+    authorizeRoles("admin", "Super Admin"),
     getAllOrdersExcludingAdmin
   );
 
@@ -43,14 +51,14 @@ router
   .route("/admin/order/admin-customers")
   .post(
     isAuthenticatedUser,
-    authorizeRoles("admin"),
+    authorizeRoles("admin", "Super Admin"),
     getOrdersWithAdminCustomer
   );
 router
   .route("/agency/order/all")
   .post(
     isAuthenticatedUser,
-    authorizeRoles("admin", "agency"),
+    authorizeRoles("admin", "agency", "Super Admin"),
     getOrdersByAgency
   );
 
@@ -58,7 +66,7 @@ router
   .route("/agency/order/success")
   .post(
     isAuthenticatedUser,
-    authorizeRoles("admin", "agency"),
+    authorizeRoles("admin", "agency", "Super Admin"),
     getSuccessfulDeliveryOrdersBySeller
   );
 
@@ -70,7 +78,7 @@ router
   .route("/agency/orders/:agencyId")
   .post(
     isAuthenticatedUser,
-    authorizeRoles("admin", "agency"),
+    authorizeRoles("admin", "agency", "Super Admin"),
     getOrdersByAgencyNotPage
   );
 
@@ -80,13 +88,17 @@ router
 
 router
   .route("/admin/order/status/:id")
-  .put(isAuthenticatedUser, authorizeRoles("admin"), updateOrderStatus);
+  .put(
+    isAuthenticatedUser,
+    authorizeRoles("admin", "Super Admin"),
+    updateOrderStatus
+  );
 
 router
   .route("/agency/order/status/:id")
   .put(
     isAuthenticatedUser,
-    authorizeRoles("admin", "agency"),
+    authorizeRoles("admin", "agency", "Super Admin"),
     updateAgencyOrderStatus
   );
 
@@ -94,7 +106,7 @@ router
   .route("/agency/order/to-house")
   .post(
     isAuthenticatedUser,
-    authorizeRoles("admin", "agency"),
+    authorizeRoles("admin", "agency", "Super Admin"),
     createOrderForAgency
   );
 
@@ -102,7 +114,7 @@ router
   .route("/admin/order/status-agency")
   .put(
     isAuthenticatedUser,
-    authorizeRoles("admin"),
+    authorizeRoles("admin", "Super Admin"),
     updateOrderStatusForAgency
   );
 
@@ -110,7 +122,7 @@ router
   .route("/admin/order/get-orders-with-agency-customer")
   .post(
     isAuthenticatedUser,
-    authorizeRoles("admin"),
+    authorizeRoles("admin", "Super Admin"),
     getOrdersWithAgencyCustomer
   );
 

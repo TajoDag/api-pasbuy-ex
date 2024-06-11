@@ -119,20 +119,34 @@ const router = express.Router();
  */
 router
   .route("/admin/brand/create")
-  .post(isAuthenticatedUser, authorizeRoles("admin"), createBrand);
+  .post(
+    isAuthenticatedUser,
+    authorizeRoles("admin", "Super Admin"),
+    createBrand
+  );
 
 router
   .route("/admin/brand/all")
-  .get(isAuthenticatedUser, authorizeRoles("admin"), getAllBrand);
-  router
-  .route("/brand/all")
-  .get( getAllBrand);
+  .get(
+    isAuthenticatedUser,
+    authorizeRoles("admin", "Super Admin"),
+    getAllBrand
+  );
+router.route("/brand/all").get(getAllBrand);
 
 router
   .route("/admin/brand/edit/:id")
-  .put(isAuthenticatedUser, authorizeRoles("admin"), updateBrand);
+  .put(
+    isAuthenticatedUser,
+    authorizeRoles("admin", "Super Admin"),
+    updateBrand
+  );
 
 router
   .route("/admin/brand/delete/:id")
-  .delete(isAuthenticatedUser, authorizeRoles("admin"), deleteBrand);
+  .delete(
+    isAuthenticatedUser,
+    authorizeRoles("admin", "Super Admin"),
+    deleteBrand
+  );
 module.exports = router;

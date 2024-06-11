@@ -106,17 +106,17 @@ const router = express.Router();
  */
 router
   .route("/admin/product-type/create")
-  .post(isAuthenticatedUser, authorizeRoles("admin"), createProductType);
+  .post(isAuthenticatedUser, authorizeRoles("admin", "Super Admin"), createProductType);
 
 router
   .route("/admin/product-type/all")
-  .get(isAuthenticatedUser, authorizeRoles("admin"), getAllProductType);
+  .get(isAuthenticatedUser, authorizeRoles("admin", "Super Admin"), getAllProductType);
 
 router
   .route("/admin/product-type/edit/:id")
-  .put(isAuthenticatedUser, authorizeRoles("admin"), updateProductType);
+  .put(isAuthenticatedUser, authorizeRoles("admin", "Super Admin"), updateProductType);
 
 router
   .route("/admin/product-type/delete/:id")
-  .delete(isAuthenticatedUser, authorizeRoles("admin"), deleteProductType);
+  .delete(isAuthenticatedUser, authorizeRoles("admin", "Super Admin"), deleteProductType);
 module.exports = router;

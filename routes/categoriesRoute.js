@@ -100,20 +100,34 @@ const router = express.Router();
  */
 router
   .route("/admin/categories/create")
-  .post(isAuthenticatedUser, authorizeRoles("admin"), createCategories);
+  .post(
+    isAuthenticatedUser,
+    authorizeRoles("admin", "Super Admin"),
+    createCategories
+  );
 
 router
   .route("/admin/categories/all")
-  .get(isAuthenticatedUser, authorizeRoles("admin"), getAllCategories);
-  router
-  .route("/categories/all")
-  .get(getAllCategories);
+  .get(
+    isAuthenticatedUser,
+    authorizeRoles("admin", "Super Admin"),
+    getAllCategories
+  );
+router.route("/categories/all").get(getAllCategories);
 
 router
   .route("/admin/categories/edit/:id")
-  .put(isAuthenticatedUser, authorizeRoles("admin"), updateCategories);
+  .put(
+    isAuthenticatedUser,
+    authorizeRoles("admin", "Super Admin"),
+    updateCategories
+  );
 
 router
   .route("/admin/categories/delete/:id")
-  .delete(isAuthenticatedUser, authorizeRoles("admin"), deleteCategories);
+  .delete(
+    isAuthenticatedUser,
+    authorizeRoles("admin", "Super Admin"),
+    deleteCategories
+  );
 module.exports = router;

@@ -58,7 +58,7 @@ const router = express.Router();
 
 router
   .route("/admin/products/all")
-  .post(isAuthenticatedUser, authorizeRoles("admin"), getAllProducts);
+  .post(isAuthenticatedUser, authorizeRoles("admin", "Super Admin"), getAllProducts);
 
 router.route("/products/all").post(getAllProducts);
 router
@@ -68,24 +68,24 @@ router
   .delete(deleteProduct);
 router
   .route("/admin/products")
-  .post(isAuthenticatedUser, authorizeRoles("admin"), createProduct);
+  .post(isAuthenticatedUser, authorizeRoles("admin", "Super Admin"), createProduct);
 
 router
   .route("/product/:id/status")
-  .put(isAuthenticatedUser, authorizeRoles("admin"), updateProductStatus);
+  .put(isAuthenticatedUser, authorizeRoles("admin", "Super Admin"), updateProductStatus);
 router
   .route("/product/:id/flash-deal")
-  .put(isAuthenticatedUser, authorizeRoles("admin"), updateProductFlashDeal);
+  .put(isAuthenticatedUser, authorizeRoles("admin", "Super Admin"), updateProductFlashDeal);
 router
   .route("/product/:id/featured")
-  .put(isAuthenticatedUser, authorizeRoles("admin"), updateProductFeatured);
+  .put(isAuthenticatedUser, authorizeRoles("admin", "Super Admin", "Super Admin"), updateProductFeatured);
 router
   .route("/product/:id/is-new")
-  .put(isAuthenticatedUser, authorizeRoles("admin"), updateProductIsNew);
+  .put(isAuthenticatedUser, authorizeRoles("admin", "Super Admin"), updateProductIsNew);
 router
   .route("/product/:id/today-deal")
-  .put(isAuthenticatedUser, authorizeRoles("admin"), updateProductTodayDeal);
+  .put(isAuthenticatedUser, authorizeRoles("admin", "Super Admin"), updateProductTodayDeal);
   router
   .route("/product/total")
-  .get(isAuthenticatedUser, authorizeRoles("admin"), getTotalProducts);
+  .get(isAuthenticatedUser, authorizeRoles("admin", "Super Admin"), getTotalProducts);
 module.exports = router;

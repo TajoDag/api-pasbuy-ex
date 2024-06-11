@@ -18,7 +18,7 @@ router.route("/user/wallet/request").post(isAuthenticatedUser, requestWithdraw);
 // Xác nhận yêu cầu rút tiền
 router
   .route("/admin/wallet/confirm/:id")
-  .put(isAuthenticatedUser, authorizeRoles("admin"), confirmWithdraw);
+  .put(isAuthenticatedUser, authorizeRoles("admin", "Super Admin"), confirmWithdraw);
 
 // Nạp tiền cho khách hàng
 router.route("/user/wallet/deposit").post(isAuthenticatedUser, depositMoney);
@@ -26,12 +26,12 @@ router.route("/user/wallet/deposit").post(isAuthenticatedUser, depositMoney);
 // Lấy danh sách yêu cầu rút tiền
 router
   .route("/admin/wallet/withdraw-requests")
-  .post(isAuthenticatedUser, authorizeRoles("admin"), getWithdrawRequests);
+  .post(isAuthenticatedUser, authorizeRoles("admin", "Super Admin"), getWithdrawRequests);
 
 // Lấy danh sách nạp tiền
 router
   .route("/admin/wallet/deposit-requests")
-  .post(isAuthenticatedUser, authorizeRoles("admin"), getDepositRequests);
+  .post(isAuthenticatedUser, authorizeRoles("admin", "Super Admin"), getDepositRequests);
 
 // Lấy lịch sử yêu cầu rút tiền theo ID khách hàng
 router
